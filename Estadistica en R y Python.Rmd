@@ -1,0 +1,4961 @@
+---
+title: "Estadistica descriptiva con R y Python"
+author: "Hector Miguel Palomares Maldonado"
+date: "20/Agosto/2021"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## Estructuras de datos en R
+### Vectores Y tipos de datos 
+Defininir vectores
+```{r}
+library(reticulate)
+c(1,2,3,4,5)
+rep("Thor", 5)
+
+```
+Para definir un vector desde consola
+```{r}
+scan() ### Dar los valores, y doble enter para terminar
+
+```
+Si haces un vector de diferentes tipos de variables,`r`` los convierte a un solo tipo de variable, y es de forma jerarquica
+
+```{r}
+c(2, TRUE, 3.5 )
+```
+
+### Progresiones y secuencias
+```{r}
+seq(5,60, by=5)
+seq(5,60, by=3.5)
+seq(100, 6, by=-9 )
+seq(4,35, length.out=7)
+seq(4, length.out=7, by=3)
+```
+Un vector mas elaborado
+```{r}
+c(rep(pi,5), 5:10, -7)
+x<-c(1,2,3,4,5)
+c(10, x, 20, x, 30)
+```
+### Funciones y Orden de vectores 
+aplicar una función a todoslos elementos de un vector
+```{r}
+y<-  c(1:10)
+sapply(y, FUN=function(elem){sqrt(elem)})
+cuadrado=function(x){x^2}
+v=c(1,2,3,4,5,6)
+sapply(v, cuadrado)
+mean(v) #función promedio
+cumsum(v) #suma acumulada``
+  
+```
+Tarea 1
+```{r}
+vector=c(5,1,6,2,7,3)
+Ord=sort(vector)
+rev(Ord)
+```
+### Binomio de  Newton
+
+$$(a+b)^n= \sum_{k=0}^n {n \choose k} a^{n-k} \cdot b^k$$
+```{r}
+BinNew=function(a,b,n){
+  cumsum(choose(n,(0:n))*a^{n-(0:n)}*b^(0:n))
+  
+}
+
+BinNew(2,1,2)
+```
+### Subvectores y Filtros
+```{r}
+v=c(14,5,6,19,32,1,8,32,1,32, 5,1,1,2,3,4,6,32,2,4,6,1)
+v[2]
+v[-c(3,5)] # elimina estas posiciones
+v[v != 19 & v > 15]
+
+```
+Condiciones con which
+```{r}
+which(v>6)# las posiciones de los numeros  que cumplen
+v[which(v>6)] #los numeros  que cumplen
+which.min(v)
+which(v == min(v)) ## Posiciones del minimo
+which.max(v)
+which(v == max(v)) ## Posiciones del maximo 
+
+```
+### Valores NA
+```{r}
+v
+length(v)
+v[length(v) + 8]=5
+sum(v) ## Veamos que no se puede realizar esta operación y otras si tienen valores NA
+sum(v, na.rm=TRUE) ## Hace la operación dejando fuera a NA
+which(is.na(v)) # posiciones de los NA
+y=v
+y[is.na(y)]=mean(y, na.rm=TRUE )
+y
+cumsum(x[!is.na(y)]) ##en cambio esta función si se puede realizar por que excluye a los NA
+na.omit(y) ## ELIMINA los NA solo al realizar la operación, NO del arreglo original 
+
+
+```
+### Factores 
+es como un vector pero con estructura mas rica que permite usarlo para clasificar observaciones, para definirlo creamos un vector y lo transformamos por  medio de una de las funciones \emph{factor} o \emph{as.factor()}
+```{r}
+paises = c("Mexico", "España", "Africa", "china", "Mexico", "España")
+paises.factor = factor(paises)
+paises.factor
+sexo=c("H","M","H","M","M")
+gFactor=as.factor(sexo)
+gFactor
+gFactor2=factor(sexo, levels=c("H","M","B")) ##ojo es factor NO as factor
+gFactor2
+gFactor3=factor(sexo, levels=c("H","M","B"), labels=c("hombre", "mujer", "Hermafrodita"))
+gFactor3
+levels(gFactor3)=c("Masculino","Femenino","Hibrido") #Cambia las etiquetas
+gFactor3
+
+```
+Factor Ordenado, los niveles siguen un orden    
+ 
+```{r}
+notas=c(5, 7,8,10)
+ordered(notas, labels=c("reprobado", "Acreditado", "notable", "Excelente"))
+
+```
+
+### Listas
+
+```{r}
+
+x=c(1,-5,4,-7,9,-3,2,-8,-6,0)
+L=list(nombres="Temperaturas", datos=x, media=mean(x), sumas=cumsum(x))
+L
+
+```
+Aceder a la lista
+```{r}
+L$media
+L[[3]]
+L[[2]] ## Operar con los elementos de la lista
+L[2] #Muestra como  una lista  
+2*L[[2]]
+str(L) ## Estructura de la lista
+names(L) 
+
+```
+
+
+### Matrices
+definición \emph{matrix(vector, nrow=n, byrow=valor_logico)}
+```{r}
+M = matrix(1:12 , nrow=4)
+M
+MF = matrix(1:12 , nrow=4, byrow = TRUE)
+MF
+M1 = matrix(1:12 , nrow=3)
+M1
+unosM=matrix(1, nrow = 4, ncol = 5)
+unosM
+
+```
+
+Otra forma para definir matrices 
+\emph{rbind(vector1, vector2,\ldots  )} construye la matriz por filas
+\emph{cbind(vector1, vector2,\ldots  )} construye la matriz por columnas
+los vectores deben tener la misma longitud
+esta función tambien añade fila(s), o columna(s) a una matriz
+```{r}
+
+ranadir=rbind(MF, c(1,2,3), c(-11, -12, -13)) ## añade filas a una matriz
+ranadir 
+cbind(ranadir, c(22,33,55, 27,28,40), c(-111, -112, -113, 27, -100, -60)) # añade columnas a la matriz añadida por columnas (anterior)
+M4=rbind(c(1,2,3), c(-1,-2,-3))
+M4
+M5=cbind(c(1,2,3), c(-1,-2,-3))
+M5
+diag(c(5,10,15)) ## solo elementos en la  diagonal
+diag(10, nrow = 4)
+
+```
+formas de acceder a las  matrices : \emph{m[i,j]}, por fila \emph{m[i,]}, por columna \emph{m[,j]}
+```{r}
+ranadir
+ranadir[2,3]
+ranadir[2,]
+ranadir[,3]
+subMatriz=ranadir[c(4,5,6), 2:3]
+subMatriz 
+diag(ranadir)
+nrow(ranadir)
+ncol(ranadir)
+dim(ranadir)
+sum(unosM)
+prod(ranadir)
+mean(ranadir)
+colSums(ranadir)
+rowSums(ranadir)
+colMeans(ranadir)
+rowMeans(ranadir)
+
+
+```
+Aplicar  funciones a matrices
+
+```{r}
+apply(ranadir, MARGIN = 1, FUN=function(x){sum(sqrt(x^2))}) #por filas = 1
+apply(ranadir, MARGIN = 2, FUN=function(x){sum(sqrt(x^2))}) #por columnas = 2
+
+```
+
+
+
+
+### Un poco de Algebra lineal
+La transpusta de la matriz
+```{r}
+M
+t(M)
+```
+suma de matrices
+```{r}
+M+M
+```
+multplicación de componentes de  dos matrices (mismo numero de entradas)
+```{r}
+M4
+M4*M4
+```
+Mulplicación de matices
+```{r}
+M %*% t(M)
+```
+Determinante de la matriz
+```{r}
+Matris1=cbind(c(2,1), c(1,2))
+Matris1
+det(Matris1)
+
+```
+```{r}
+Matris2=cbind(c(1,4,2), c(0,1,3), c(1,8,9))
+Matris2T=solve(Matris2)
+Matris2T
+Matris2T %*% Matris2 ## Identidad 
+
+
+```
+la función solve, tambien resuelve $Ax=B$ donde $A$ es una Matriz y $B$ un vector 
+```{r}
+t(Matris2)
+solve(t(Matris2), c(1,2,3))
+eigen((t(Matris2))) ##Valores y Vectores Propios
+eigen(t(Matris2))$values
+eigen(t(Matris2))$vectors
+## Me equivoque en la matriz, en el ejemplo era la traspuesta, por eso pongo t(Matriz)
+```
+
+
+## Introducción a la representacion grafica
+
+
+### Gráfico básico de puntos
+- `plot(x,y)`: para dibujar un gráfico básico de puntos siendo $x,y$ vectores numéricos
+    - `plot(x)` = `plot(1:length(x),x)`
+    
+- `plot(x,función)`: para dibujar el gráfico de una función 
+
+
+```{r, fig.height = 4, fig.width = 7, fig.align = "center"}
+alumnos = c(1:10)
+notas = c(2,5,7,9,8,3,5,6,10,7)
+plot(alumnos,notas)
+```
+
+
+
+### Parámetros de la función plot()
+
+- `log`: para indicar que queremos el gráfico en escala logarítmica
+- `main("título")`: para poner título al gráfico. Si en vez de un texto se puede poner una expresión matemática,  utilizaremos la función `expression()` 
+- `xlab("etiqueta")`: para poner etiqueta al eje $X$
+- `ylab("etiqueta")`: para poner etiqueta al eje $Y$
+- `pch=n`: para elegir el símbolo de los puntos. $n=0,1,...,25$. El valor por defecto es `pch = 1`
+- `cex`: para elegir el tamaño de los símbolos
+- `col="color en inglés"`: para elegir el color de los símbolos. [Gama de colores](http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf).
+
+#### Escala logarítmica
+
+```{r, fig.height = 3.75, fig.width = 9, fig.align = "center"}
+par(mfrow = c(1,2))
+plot = plot(exp(1:20), xlab = "Indice", ylab = expression(e^{1:20}), 
+            main = "Escala lineal")
+plotLog = plot(exp(1:20), log = "y", xlab = "Indice", ylab = expression(e^{1:20}), 
+               main = "Escala logaritmica en el eje y")
+par(mfrow = c(1,1))
+```
+
+
+### Más Parámetros de la función plot()
+
+- `type`: para elegir el tipo de gráfico que queremos:
+    - `p`: puntos (valor por defecto)
+    - `l`: líneas rectas que unen los puntos (dichos puntos no tienen símbolo)
+    - `b`: líneas rectas que unen los puntos (dichos puntos tienen símbolo). Las líneas no traspasan los puntos
+    - `o`: como el anterior pero en este caso las líneas sí que traspasan los puntos
+    - `h`: histograma de líneas
+    - `s`: histograma de escalones
+    - `n`: para no dibujar los puntos
+
+
+#### Tipos de gráfico
+
+```{r, eval=FALSE}
+par(mfrow = c(3,2))
+x = c(50:59)
+y = c(2,9,25,3,100,77,62,54,19,40)
+plot(x,y, pch = 23, cex = 2, col = "blue", type = "p")
+plot(x,y, pch = 23, cex = 2, col = "blueviolet", type = "l")
+plot(x,y, pch = 23, cex = 2, col = "gold", type = "b")
+plot(x,y, pch = 23, cex = 2, col = "deeppink", type = "o")
+plot(x,y, pch = 23, cex = 2, col = "springgreen", type = "h")
+plot(x,y, pch = 23, cex = 2, col = "firebrick1", type = "s")
+par(mfrow = c(1,1))
+```
+
+
+```{r, echo=FALSE, fig.width = 7, fig.align = "center", fig.height=5.5}
+par(mfrow = c(3,2))
+x = c(50:59)
+y = c(2,9,25,3,100,77,62,54,19,40)
+plot(x,y, pch = 23, cex = 2, col = "blue", type = "p")
+plot(x,y, pch = 23, cex = 2, col = "blueviolet", type = "l")
+plot(x,y, pch = 23, cex = 2, col = "gold", type = "b")
+plot(x,y, pch = 23, cex = 2, col = "deeppink", type = "o")
+plot(x,y, pch = 23, cex = 2, col = "springgreen", type = "h")
+plot(x,y, pch = 23, cex = 2, col = "firebrick1", type = "s")
+par(mfrow = c(1,1))
+```
+
+
+
+- `lty`: para especificar el tipo de línea
+    - "solid" : $1$: línea continua (valor por defecto)
+    - "dashed" : $2$: línea discontinua
+    - "dotted" : $3$: línea de puntos
+    - "dotdashed" : $4$: línea que alterna puntos y rayas
+    
+- `lwd`: para especificar el grosor de las líneas
+- `xlim`: para modificar el rango del eje $X$
+- `ylim`: para modificar el rango del eje $Y$
+- `xaxp`: para modificar posiciones de las marcas en el eje $X$
+- `yaxp`: para modificar posiciones de las marcas en el eje $Y$
+
+
+
+```{r, fig.height = 4, fig.width = 9, fig.align = "center"}
+x = (2*(1:20))
+y = (-1)^(1:20)*5*(1:20)
+plot(x,y, main = "Ejemplo de grafico", pch = 8, cex = 1, type = "b", lty = 4, lwd = 4, 
+     xaxp = c(0,40,2), yaxp = c(-100,100,8))
+```
+
+
+
+### Añadir elementos al gráfico 
+
+- `points(x,y)`: añade un punto de coordenadas $(x, y)$ a un gráfico ya existente
+- `abline`: para añadir una recta a un gráfico ya existente
+    - `abline(a,b)`: añade la recta $y=bx+a$
+    - `abline(v = x0)`: añade la recta vertical $x=x_0$. $v$ puede estar asignado a un vector
+    - `abline(h = y0)`:  añade la recta horizontal $y=y_0$. $h$ puede estar asignado a un vector
+    
+
+### Añadiendo punto y recta
+
+```{r, eval=FALSE}
+x = (2*(1:20))
+y = (-1)^(1:20)*5*(1:20)
+plot(x,y, main = "Poniendo un punto y una recta", pch = 8, cex = 1, type = "b", lty = 4, 
+     lwd = 4, xaxp = c(0,40,2), yaxp = c(-100,100,8))
+points(20,0, col = "red", cex = 4, pch = 16)
+abline (h = 0, lty = 2, col = "dodgerblue")
+```
+
+
+```{r, echo = FALSE, fig.width = 9, fig.align = "center"}
+x = (2*(1:20))
+y = (-1)^(1:20)*5*(1:20)
+plot(x,y, main = "Poniendo un punto y una recta", pch = 8, 
+     cex = 1, type = "b", lty = 4, lwd = 4, 
+     xaxp = c(0,40,2), yaxp = c(-100,100,8))
+points(20,0, col = "red", cex = 4, pch = 16)
+abline (h = 0, lty = 2, col = "dodgerblue")
+```
+
+
+- `text(x,y,labels = "....")`: añade en el punto de coordenadas $(x,y)$ el texto especificado como argumento de labels
+    - `pos`: permite indicar la posición del texto alrededor de las coordenadas $(x,y)$. Admite los siguientes valores:
+        - 1: abajo
+        - 2: izquierda
+        - 3: arriba
+        - 4: derecha
+        - 5: sin especificar: el texto se sitúa centrado en el punto $(x,y)$
+    
+    
+### Añadiendo etiquetas
+
+```{r, fig.width = 9, fig.height = 3.75,fig.align = "center"}
+alumnos = c(1:10)
+notas = c(2,5,7,9,8,3,5,6,10,7)
+plot(alumnos,notas, main = "Grafico con texto")
+text(alumnos,notas, labels = c("S","A","N","E","N","S","A","A","E","N"), 
+     pos = c(rep(3,times = 8),1,3))
+```
+
+
+- `lines(x, y)`:añade a un gráfico existente una línea poligonal que une los puntos $(x_i, y_i)$ sucesivos. $x,y$ son vectores numéricos
+- `curve(curva)`: permite añadir la gráfica de una curva a un gráfico existente
+    - `add=TRUE`: si no, la curva no se añade
+    - La curva se puede especificar mediante una expresión algebraica con variable $x$, o mediante su nombre si la hemos definido antes
+    
+    
+
+#### Añadiendo líneas y curvas
+
+```{r, results='hide', fig.align="center", fig.height=4}
+x = c(5*(1:20))
+plot(x,c(exp(-x)+(-1)^x*x/2*sin(x)^2))
+lines(c(20,10,40,80,60,60,20),c(20,0,-20,-20,40,0,20), lwd = 2, col = "darkslategray1")
+curve(20*sin(x), add = TRUE, col = "green")
+```
+
+
+- `legend(posición, legend = ...)`: para añadir una leyenda
+    - La posición indica donde queremos situar la leyenda. Puede ser o bien las coordenadas de la esquina superior izquierda de nuestra leyenda, o bien una de las palabras siguientes:
+        - "bottom" / "bottomright" / "bottomleft"
+        - "top" / "topright" / "topleft"
+        - "center" / "right" / "left"
+        
+    - `legend`: contiene el vector de nombres entre comillas con los que queremos identificar a las curvas en la leyenda
+    
+    
+### Añadiendo leyenda
+
+```{r, eval = FALSE}
+x = seq(0,2*pi,0.1)
+plot(x,sin(x),type="l",col="blue",lwd=3, xlab="", ylab="")
+lines(x,cos(x),col="green",lwd=3)
+lines(x, tan(x), col="purple",lwd=3)
+legend("bottomleft",col=c("blue","green","purple"), legend=c("Seno","Coseno", "Tangente"), 
+       lwd=3, bty="l")
+```
+
+
+```{r, echo = FALSE, fig.align="center"}
+x = seq(0,2*pi,0.1)
+plot(x,sin(x),type="l",col="blue",lwd=3,
+     xlab="", ylab="")
+lines(x,cos(x),col="green",lwd=3)
+lines(x, tan(x), col="purple",lwd=3)
+legend("bottomleft",col=c("blue","green","purple"),
+     legend=c("Seno","Coseno", "Tangente"), lwd=3, bty="l")
+```
+
+### Segmentos, Fechas, Simbolos  y Poligonos
+
+Añadir elementos al gráfico
+
+- `segments`: para añadir segmentos a un gráfico existente
+- `arrows`: para añadir flechas a un gráfico existente
+- `symbols`: para añadir símbolos a un gráfico existente
+- `polygon`: para añadir polígonos cerrados especificando sus vértices a un gráfico existente
+
+
+```{r, eval = FALSE}
+x = c(5*(1:10))
+plot(x,c(exp(-x)+(-1)^x*x/2*sin(x)^2), xlab = "", ylab = "", 
+     main = "Grafico con varios elementos")
+segments(10,0,40,0, col = "red", lwd = 4)
+arrows(10,0,40,-10, col = " blue", length = 0.5, angle = 5, code = 3)
+symbols(40,0,stars = cbind(1,.5,1,.5,1,.5,1,.5,1,.5), add = TRUE, lwd = 3, inches = 0.5)
+symbols(40,0,stars = cbind(1,.5,1,.5,1,.5,1,.5,1,.5), add = TRUE, lwd = 3)
+polygon(c(20,30,40),c(10,-10,10), col = "gold", density = 3, angle = 90, lty = 4, 
+        lwd = 5)
+```
+
+```{r, echo = FALSE, fig.align="center"}
+x = c(5*(1:10))
+plot(x,c(exp(-x)+(-1)^x*x/2*sin(x)^2), xlab = "", ylab = "", 
+     main = "Grafico con varios elementos")
+segments(10,0,40,0, col = "red", lwd = 4)
+arrows(10,0,40,-10, col = " blue", length = 0.5, angle = 5, code = 3)
+symbols(40,0,stars = cbind(1,.5,1,.5,1,.5,1,.5,1,.5),
+        add = TRUE, lwd = 3, inches = 0.5)
+symbols(40,0,stars = cbind(1,.5,1,.5,1,.5,1,.5,1,.5),
+        add = TRUE, lwd = 3)
+polygon(c(20,30,40),c(10,-10,10), col = "gold", density = 3, 
+        angle = 90, lty = 4, lwd = 5)
+```
+
+### Extra
+```{r}
+x=c(2,7,1,9,5)
+y=c(-2,9,-4,1,-1)
+plot(x,y)
+
+```
+
+```{r, plot sqrt, fig.cap="grafica de la función sqrt", fig.align='center'}
+f <- function(x){sqrt(x)}
+plot(f)
+
+```
+
+```{r, echo=FALSE, fig.align='center'}
+n=1:20
+fib=(1/sqrt(5))*((1+sqrt(5))/2)^n - (1/sqrt(5))*((1-sqrt(5))/2)^n
+fib
+par(mfrow=c(1,2)) ##SubGraficas
+plot(fib, xlab = "n", ylab = expression(F[n]), main = "Sucesión de Fibonacci", pch = 11, col = "powderblue")
+plot(fib, xlab = "n", ylab = expression(F[n]), main = "Sucesión de Fibonacci", pch = 11, col= "red", log = "y" )
+
+
+```
+
+
+```{r}
+f <- function(x){
+   x^2-2*x + sqrt(abs(x))
+}
+plot(f, xlim = c(-3,3))
+points(0,0, pch = 19) ## Coloca un punto en 0,0  de  tamaño 19
+points(-3:3, (-3:3)^2, col = "blue") ##  puntos que forma una parabola
+abline(2,3, lty = "dashed", col = "red") ## pendiente , ordenada
+abline(v = 2, lty = "dotted", col = "green") ## v=vertical
+abline(h = 5, lty = "dotdash", col = "purple") ## h=horizontal
+
+```
+
+ 
+```{r}
+plot(tan, main="tan(x)" ,xlim = c(-pi,pi), ylim = c(-5,5))
+abline(v=c(-pi/2, pi/2), col="red")
+
+```
+
+ 
+```{r}
+x=c(2,7,1,9,5)
+y=c(-2,9,-4,1,-1)
+plot(x,y, main = "Grafico de puntos ", xlim = c(0,11))
+text(x,y, labels=c("(2,-2)", "(7,9)", "(1,-4)", "(9,1)", "(5,-1)"), pos = c(1,2,3,4,4))
+
+```
+ 
+ 
+```{r}
+f <- function(x){x^2}
+plot(f, xlim = c(-3,3), ylim = c(-5,5), lwd = 3)  
+points(-3:3, f(-3:3), pch = 19)
+lines(-3:3, f(-3:3), lwd=3, lty="dotted", col="red")
+curve(x^3, lty = "dashed", col= "blue", add=TRUE, lwd=2)
+legend("bottomright", legend = c(expression(x^2), expression(x^3)), lwd=2, col=c("red","blue"), lty=c("dotted", "dashed"))
+
+
+```
+
+ 
+```{r}
+x=seq(0, 2*pi, 0.1)
+plot(x, sin(x), type="l", col="blue", lwd=3)
+lines(x, cos(x), col="green", lwd=3)
+lines(x, tan(x), col="purple", lwd=3)
+legend("bottomleft", col=c("blue", "green", "purple"),  legend=c("Seno", "Coseno", "tangente"),  lwd=3, bty="l")
+```
+ 
+
+
+
+## DataFrames
+Un data frame es una tabla de doble entrada, formada por variables en las columnas y observaciones de estas variables en las filas, de manera que cada fila contiene los valores de las variables para un mismo caso o un mismo individuo. 
+
+
+  `data()`: para abrir una ventana con la lista de los objetos de datos a los que tenemos acceso en la sesión actual de R (los que lleva la instalación básica de R y los que aportan los paquetes que tengamos cargados. 
+  
+  - Si entramos `data(package=.packages(all.available = TRUE))` obtendremos la lista de todos los objetos de datos a los que tenemos acceso, incluyendo los de los paquetes que tengamos instalados, pero que no estén cargados en la sesión actual. 
+
+Obteniendo información del data frame
+
+  - `head(d.f,n)`: para mostrar las $n$ primeras filas del data frame. Por defecto se muestran las 6 primeras filas
+
+  - `tail(d.f,n)`: para mostrar las $n$ últimas filas del data frame. Por defecto semuestran las 6 últimas
+
+  - `str(d.f)`: para conocer la estructura global de un data frame
+
+  - `names(d.f)`: para producir un vector con los nombres de las columnas 
+ 
+Acontinuacion, se muestra un datafreme llamado iris, que viene por defecto
+```{r}
+df = iris
+head(df,5)
+tail(df,5)
+```
+
+```{r}
+names(df)
+str(df)
+```
+### Estructura y filtrado de DataFrames 
+Obteniendo información del data frame
+
+- `rownames(d.f)`: para producir un vector con los identificadores de las filas `R` entiende siempre que estos identificadores son palabras, aunque sean números, de ahí que los imprima entre comillas
+
+- `colnames(d.f)`: para producir un vector con los identificadores de las columnas
+
+- `dimnames(d.f)`: para producir una list formada por dos vectores (el de los identificadores de las filas y el de los nombres de las columnas)
+
+- `nrow(d.f):` para consultar el número de filas de un data frame
+
+- `ncol(d.f):` para consultar el número de columnas de un data frame
+
+- `dim(d.f):` para producir un vector con el número de filas y el de columnas 
+ 
+- `d.f$nombre_variable` : para obtener una columna concreta de un dataframe
+
+  - El resultado será un vector o un factor, según cómo esté definida la columna dentro del data frame
+
+  - Las variables de un data frame son internas, no están definidas en el entorno global de trabajo de R 
+ 
+ 
+ 
+ 
+```{r}
+df$Petal.Length[1:10]
+df$Species[1:10]
+
+```
+ 
+### Sub-data frames
+
+`d.f[n,m]`: para extraer “trozos” del data frame por filas y columnas (funciona exactamente igual que en matrices) donde n y m pueden definirse como:
+
+- intervalos
+
+- condiciones
+
+- números naturales
+
+- no poner nada
+
+- Si sólo queremos definir la subtabla quedándonos con algunas variables, basta aplicar el nombre del data frame al vector de variables
+
+- Estas construcciones se pueden usar también para reordenar las filas o columnas
+
+```{r}
+
+df[1:10,]
+df[1:10,2:4]
+df[df$Species == "setosa" & df$Sepal.Width > 4,  ]
+
+```
+#### Leyendo tablas de datos
+
+- `read.table()`: para definir un data frame a partir de una tabla de datos contenida en un fichero
+    - Este fichero puede estar guardado en nuestro ordenador o bien podemos conocer su url. Sea cual sea el caso, se aplica     la función al nombre del fichero o a la dirección entre comillas
+
+
+### Parámetros de read.table()
+
+- `header = TRUE`: para indicar si la tabla que importamos tiene una primera fila con los nombres de las columnas. El valor por defecto es FALSE
+- `col.names = c(...)`: para especificar el nombre de las columnas. No olvidéis que cada nombre debe ir entre comillas
+- `sep`: para especificar las separaciones entre columnas en el fichero (si no es un espacio en blanco). Si es así, hay que introducir el parámetro pertinente entre comillas
+- `dec`: para especificar el signo que separa la parte entera de la decimal (si no es un punto. Si es así, hay que introducir el parámetro pertinente entre comillas
+
+### Dataset desde URL
+
+```{r}
+path = "https://raw.githubusercontent.com/joanby/r-basic/master/data/StudentsData"
+students = read.table(path, 
+  col.names = c("technicalDisciplines","aptitude","maths", "language",
+                "generalKnowledge"))
+head(students,8)
+```
+#### Más parámetros de read.table()
+
+- `stringsAsFactors`: para prohibir la transformación de las columnas de palabras en factores debemos usar `stringsAsFactors=FALSE` (ya que por defecto, R realiza dicha transformación) 
+
+- Para importar un fichero de una página web segura (cuyo url empiece con https),
+no podemos entrar directamente la dirección en `read.table()`; una solución es instalar y cargar el paquete RCurl y entonces usar la instrucción `read.table (textConnection(getURL(“url ”)),...)`.
+ 
+### Leyendo diferentes tipos de fichero
+
+- `read.csv()`: para importar ficheros en formato CSV
+- `read.xls()` o `read.xlsx()`: para importar hojas de cálculo tipo Excel u OpenOffice en formato XLS o XLSX, respectivamente. Se necesita el paquete xlsx
+- `read.mtb()`: para importar tablas de datos Minitab. Se necesita el paquete foreign
+- `read.spss()`: para importar tablas de datos SPSS. Se necesita el paquete foreign
+
+### Exportando datos a ficheros
+
+- `write.table(df, file = "")`: para exportar un data frame a un fichero
+    - `file = ""`: es donde indicaremos el nombre que queremos darle al fichero
+    - Podemos usar el parámetro `sep` para indicar el símbolo de separación de columnas. Siempre entre comillas
+    - También podemos utilizar el parámetro `dec` para indicar la separación entre la parte entera y decimal de los datos
+    
+#### Construyendo data frames
+
+- `data.frame(vector_1,...,vector_n)`: para construir un data frame a partir de vectores introducidos en el orden en el que queremos disponer las columnas de la tabla
+    - R considera del mismo tipo de datos todas las entradas de una columna de un data frame
+    - Las variables tomarán los nombres de los vectores. Estos nombres se pueden especificar en el argumento de `data.frame` entrando una construcción de la forma `nombre_variable = vector`
+    - `rownames`: para especificar los identificadores de las filas
+    - También en esta función podemos hacer uso del parámetro `stringsAsFactors` para evitar la transformación de las columnas de tipo palabra en factores
+
+```{r}
+Algebra = c(1,2,0,5,4,6,7,5,5,8)
+Analysis = c(3,3,2,7,9,5,6,8,5,6)
+Statistics = c(4,5,4,8,8,9,6,7,9,10)
+grades = data.frame(Alg = Algebra, An = Analysis, Stat = Statistics)
+str(grades)
+```
+
+```{r}
+gender = c("H", "H", "H", "M", "M")
+age =    c( 23,  45,  20,  30,  18)
+family = c(  2,   3,   4,   2,   5)
+df3=data.frame(genero=gender, edad=age, familia=family)
+row.names(df3) = c("P1", "P2", "P3", "P4", "P5")
+df3
+str(df3)
+dimnames(df3)=list( 
+  c("Antonio", "Ricardo","JuanGabriel","Maria","Margarita"),
+  c("Sexo", "años","MiembrosFamilia"))
+df3
+df4=df3
+```
+
+### Construyendo data frames
+
+- `fix(d.f)`: para crear / editar un data frame con el editor de datos
+
+- `names(d.f)`: para cambiar los nombres de las variables
+
+- `rownames(d.f)`: para modificar los identificadores de las filas. Han de ser todos diferentes
+
+- `dimnames(d.f)=list(vec_nom_fil, vec_nom_col)`: para modificar el nombre de las filas y de las columnas simultáneamente
+
+
+- `d.f[núm_fila,] = c(...)`: para añadir una fila a un data frame
+
+    - Las filas que añadimos de esta manera son vectores, y por tanto sus entradas han de ser todas del mismo tipo
+    
+    - Si no añadimos las filas inmediatamente siguientes a la última fila del data frame, los valores entre su última fila y las que añadimos quedarán no definidos y aparecerán como NA
+
+    - Para evitar el problema anterior, vale más usar la función `rbind()` para concatenar el data frame con la nueva fila
+    
+
+
+```{r}
+df3 = rbind(df3, c("H", 30, 1))
+df3 
+```
+- `d.f$new_var`: para añadir una nueva variable al data frame
+    - Podemos concatenar columnas con un data frame existente mediante la función `cbind()`. De este modo se puede añadir la columna directamente sin necesidad de convertirla antes a data frame
+    - Esta nueva variable ha de tener la misma longitud que el resto de columnas del data frame original. Si no, se añadirán valores NA a las variables del data frame original o a la nueva variable hasta completar la misma longitud
+
+
+
+```{r}
+df3$Sexo=as.character(df3$Sexo)
+## Podemos añadir una nueva columna
+df3$Ingresos = c(10000, 12000, 15000, 20000, 21000,11000)
+df3
+```
+
+```{r}
+as.character(df3$años)
+as.numeric(df3$años)
+```
+```{r}
+df4
+df4[df4$Sexo=="M",] -> df_m 
+df_m
+
+```
+
+
+### Cambiando los tipos de datos
+
+- `as.character`: para transformar todos los datos de un objeto en palabras
+- `as.integer`: para transformar todos los datos de un objeto a números enteros
+- `as.numeric`: para transformar todos los datos de un objeto a números reales
+
+
+### Sub-data frames
+
+- `droplevels(d.f)`: para borrar los niveles sobrantes de todos los factores, ya que las columnas que son factores heredan en los sub-data frames todos los niveles del factor original, aunque no aparezcan en el trozo que hemos extraído
+
+- `select(d.f, parámetros)`: para especificar que queremos extraer de un data frame
+    - `starts_with("x")`: extrae del data frame las variables cuyo nombre empieza con la palabra "x"
+    - `ends_with("x")`: extrae del data frame las variables cuyo nombre termina con la palabra "x"
+    - `contains("x")`: extrae del data frame las variables cuyo nombre contiene la palabra "x"
+    - Se necesita el paquete `dplyr` o mejor aún `tidyverse`
+
+```{r}
+library(tidyverse)
+iris_petal=select(iris, starts_with("Petal"))## columnas que comiencen en petal
+head(iris_petal)
+iris_length=select(iris, ends_with("Length"))
+head(iris_length)
+
+
+```
+
+- `subset(df,condición,select = columnas)`: para extraer del data frame las filas que cumplen la condición y las columnas especificadas
+    - Si queremos todas las filas, no hay que especificar ninguna condición
+    - Si queremos todas las columnas, no hace especificar el parámetro `select`
+    - Las variables en la condición se especifican con su nombre, sin añadir antes el nombre del data frame
+    
+
+```{r}
+subset(iris, Species=="setosa") -> setosa  
+head(setosa)  
+  
+
+```
+
+
+```{r}
+subset(iris, Species=="versicolor", select=c(1,3)) -> versicolor  
+head(versicolor)  
+## Para renombrar los indices
+rownames(versicolor)=1:nrow(versicolor)
+head(versicolor)
+str(versicolor)
+  
+
+```
+
+### Samply, Aggregate, y Attach/Detach a DataFrames
+#### Aplicando funciones a data frames  
+
+- `sapply(d.f, función)`: para aplicar una función a todas las columnas de un data frame en un solo paso
+    - `na.rm=TRUE`: para evitar que el valor que devuelva la función para las columnas que contengan algún NA sea NA
+
+- `aggregate(variables~factors,data=d.f,FUN=función)`: para aplicar una función a variables de un data frame clasificadas por los niveles de un, o más de un, factor
+    - Si queremos aplicar la función a más de una variable, tenemos que agruparlas con un `cbind`
+    - Si queremos separar las variables mediante más de un factor, tenemos que agruparlos con signos $+$
+
+
+```{r}
+str(iris)
+sapply(subset(iris, select = 1:4), mean) ## aplicamos la función promedio para las columnas 1--4
+sapply(iris[, 1:4], sum )
+f=function(x){sqrt(sum(x^2))}
+sapply(iris, f)
+
+
+```
+
+```{r}
+df=data.frame(C1=c(1,2, NA, 4), C2=c(5,NA,2,3))
+# Si algun data tiene NA, los eliminamos
+sapply(df, mean, na.rm=TRUE)
+```
+```{r}
+aggregate(cbind(Sepal.Length, Petal.Length)~ Species, data=iris, FUN = mean, na.rm=TRUE)
+
+```
+
+data frame de automoviles default en r, mtcars
+```{r}
+head(mtcars)
+str(mtcars)
+# Convetir una columna de numeros a factores
+mtcars$cyl=as.factor(mtcars$cyl)
+mtcars$gear=as.factor(mtcars$gear)
+mtcars$carb=as.factor(mtcars$carb)
+str(mtcars) ###Ver como cambia
+aggregate(mpg~cyl+gear+carb, data=mtcars, FUN=mean, na.rm=TRUE)
+
+
+
+
+```
+
+### variables globales
+
+- `attach(d.f)`: para hacer que R entienda sus variables como globales y que las podamos usar por su nombre, sin necesidad de añadir delante el nombre del data frame y el símbolo $
+    - Si ya hubiera existido una variable definida con el mismo nombre que una variable del data frame al que aplicamos `attach`, hubiéramos obtenido un mensaje de error al ejecutar esta función y no se hubiera reescrito la variable global original
+- `detach(d.f)`: para devolver la situación original, eliminando del entorno global las variables del data frame
+
+
+##  Estadistica Descriptiva Con Datos Cualitativos
+
+### Análisis estadístico de los datos
+
+Cuando tenemos una serie de datos que describen algunos aspectos de un conjunto de individuos queremos llevar a cabo un análisis estadístico. Estos análisis estadísticos se clasifican en:
+
+- <l class="definition">Análisis exploratorio</l>, o <l class="definition">descriptivo</l>, si nuestro objetivo es resumir, representar y explicar los datos concretos de los que disponemos. La <l class="definition">estadística descriptiva</l> es el conjunto de técnicas que se usan con este fin.
+
+- <l class="definition">Análisis inferencial</l>, si nuestro objetivo es deducir (inferir), a partir de estos datos, información significativa sobre el total de la población o las poblaciones de interés. Las técnicas que se usan en este caso forman la <l class="definition">estadística inferencial</l>.
+
+
+Existe relación entre ambos. Cualquier análisis inferencial se suele empezar explorando los datos que se usarán así cómo también muchas técnicas descriptivas permiten estimar propiedades de la población de la que se ha extraído la muestra. 
+
+<div class="example">
+**Ejemplo**
+
+La media aritmética de las alturas de una muestra de individuos nos da un valor representativo de esta muestra, pero también estima la media de las alturas del total de la población
+</div>
+###Estudio de los datos Cualitativos
+#### Tipos de datos
+
+Trabajamos con <l class="definition">datos multidimensionales:</l> observamos varias características de una serie de individuos. 
+
+Se registran en un archivo de ordenador con un formato preestablecido. Por ejemplo texto simple (codificado en diferentes formatos: ASCII, isolatin$\dots$), hojas de cálculo (archivos de Open Office o Excel), bases de datos, etc. 
+
+
+Una de las maneras básicas de almacenar datos es en forma de tablas de datos. En R hacemos uso de data frames.
+
+En una tabla de datos cada columna expresa una variable, mientras que cada fila corresponde a las observaciones de estas variables para un individuo concreto. 
+
+- Los datos de una misma columna tienen que ser del mismo tipo, porque corresponden a observaciones de una misma propiedad. 
+- Las filas en principio son de naturaleza heterogénea, porque pueden contener datos de diferentes tipos. 
+
+Los tipos de datos que consideramos son los siguientes:
+
+- <l class="definition">Datos de tipo atributo</l>, o <l class="definition">cualitativos:</l> Expresan una cualidad del individuo. En R guardaremos las listas de datos cualitativos en vectores (habitualmente, de palabras), o en factores si vamos a usarlos para clasificar individuos.
+
+- <l class="definition">Datos ordinales:</l> Similares a los cualitativos, con la única diferencia de que se pueden ordenar de manera natural. Por ejemplo, las calificaciones en un control (suspenso, aprobado, notable, sobresaliente). En R guardaremos las listas de datos ordinales en factores ordenados.
+
+- <l class="definition">Datos cuantitativos:</l> Se refieren a medidas, tales como edades, longitudes, etc. En R guardaremos las listas de datos cuantitativos en vectores numéricos.
+
+
+
+#### ¿Qué son los datos cualitativos?
+
+Los <l class="definition">datos cualitativos</l> corresponden a observaciones sobre cualidades de un objeto o individuo. 
+
+Suelen codificarse por medio de palabras, pero también se pueden usar números que jueguen el papel de etiquetas.
+
+<div class="example">
+**Ejemplo**
+
+Es habitual representar No (o Falso, Fracaso, Ausente...) con un 0, y Sí (o Verdadero, Éxito, Presente...) con un 1
+</div>
+
+Los datos cualitativos son aquellos que pueden ser iguales o diferentes, pero que no admiten ningún otro tipo de comparación significativa.
+
+Es decir, que no tenga ningún sentido preguntarse si uno es más grande que otro, ni efectuar operaciones aritméticas con ellos, aunque estén representados por números. 
+
+
+
+
+
+Por lo tanto, un mismo conjunto de datos puede ser cualitativo o de otro tipo, según el análisis que vayamos a hacer de él. 
+
+<div class = "example">
+**Ejemplo**
+
+Si hemos anotado durante unos años los días de la semana en los que ha llovido y queremos contar cuántas veces ha ocurrido en lunes, cuántas en martes, etc., esta lista de nombres (o números) serán datos cualitativos. Si, en cambio, queremos estudiar cómo se comportan los días de lluvia según avanza la semana, y por lo tanto el orden de los días es relevante, serán datos ordinales
+</div>
+
+
+<l class="definition">Variable cualitativa:</l> lista de observaciones de un tipo de datos cualitativos sobre un conjunto concreto de objetos. 
+
+<l class="definition">Niveles:</l> diferentes valores que pueden tomar estos datos. Por ejemplo, los dos niveles de una variable Sexo serían `M` (Macho) y `H` (Hembra), o sinónimos.
+
+Con R, usaremos vectores y factores para representar variables cualitativas. Los factores nos servirán para agrupar las observaciones según los niveles de la variable. De esta manera podremos segmentar la población que representa la variable en grupos o subpoblaciones, asignando un grupo a cada nivel, y podremos comparar el comportamiento de otras variables sobre estos grupos.
+
+
+### Frecuencias absolutas y relativas
+
+Dada una variable cualitativa, para cada uno de sus niveles podemos contar cuántos datos hay en ese nivel (<l class="definition">frecuencia absoluta</l>) y qué fracción del total representan (<l class="definition">frecuencia relativa</l>).
+
+
+
+**Ejemplo**
+
+Supongamos que tenemos un tipo de datos cualitativos con niveles 
+$$l_1,l_2,\cdots,l_k$$ 
+
+Efectuamos $n$ observaciones de este tipo de datos, y denotamos por 
+$$x_1,x_2,\cdots,x_n$$
+los resultados que obtenemos con 
+$$x_j\in\{l_1, l_2,\cdots, l_k\}$$
+Estas observaciones forman una variable cualitativa
+
+
+Con estas notaciones:
+
+La <l class="definition">frecuencia absoluta</l>, $n_j$, del nivel $l_j$ en esta variable cualitativa es el número de observaciones en las que $x_i$ toma el valor $l_j$.
+
+La <l class="definition">frecuencia relativa</l> del nivel $l_j$ en esta variable cualitativa es la fracción 
+$$f_j = \frac{n_j}{n}$$
+
+Es decir, la frecuencia relativa del nivel $l_j$ es la fracción (en tanto por uno) de observaciones que corresponden a este nivel. 
+
+La <l class="definition">moda</l> de esta variable cualitativa es su nivel, o niveles, de mayor frecuencia (absoluta o relativa).
+
+
+**Ejemplo**
+
+Supongamos que se ha realizado un seguimiento a 20 personas asistentes a un congreso. Uno de los datos que se han recogido sobre estas personas ha sido su sexo. El resultado ha sido una variable cualitativa formada por las 20 observaciones siguientes:
+
+`Mujer, Mujer, Hombre, Mujer, Mujer, Mujer, Mujer, Mujer, Hombre, Mujer, Hombre, Hombre, Mujer, Mujer, Hombre, Mujer, Mujer, Mujer, Mujer, Hombre`
+
+Sus dos niveles son `Hombre` y `Mujer`. En esta variable hay 14 mujeres y 6 hombres. Éstas son las frecuencias absolutas de estos niveles. 
+
+Puesto que en total hay 20 individuos, sus frecuencias relativas son
+$$\text{Hombre} = \frac{6}{20} = 0.3,\qquad \text{Mujer} = \frac{14}{20} = 0.7$$
+En este caso $l_1 = \text{Hombre}$ y $l_2 = \text{Mujer}$,  $n = 20$ (el número de observaciones efectuadas), y $x_1,\cdots, x_{20}$ formarían la muestra de sexos
+</div>
+
+
+**Ejemplo**
+
+La tabla siguiente resume las frecuencias absolutas y relativas de la variable cualitativa del ejemplo anterior, con las notaciones que acabamos de introducir.
+
+$$\begin{array}{|l|c|c|c|}
+\hline
+Sexo   & n_i & f_i & \%     \\ 
+\hline
+\text{Hombre} & 6    & 0.3  & 30\%   \\ 
+\text{Mujer}  & 14   & 0.7  & 70\%   \\ 
+\text{Total}  & 20   & 1    & 100\%  \\
+\hline
+\end{array}$$
+
+Su moda es el nivel `Mujer`
+
+### Tablas de frecuencias unidimensionales
+
+Supongamos que tenemos una variable cualitativa guardada en un vector o un factor como la siguiente:
+
+```{r}
+x = sample(1:5, size = 12, replace = TRUE)
+x
+
+Respuestas=factor(sample(c("Si", "No"), size = 12, replace = TRUE)) 
+Respuestas
+```
+Con R, la tabla de frecuencias absolutas de un vector que representa una variable cualitativa se calcula con la función `table()`.
+
+```{r}
+table(x)
+
+table(Respuestas)
+```
+Al aplicar `table()` a un vector obtenemos una tabla unidimensional formada por una fila con los niveles de la variable y una segunda fila donde, debajo de cada nivel, aparece su frecuencia absoluta en el vector.
+
+Los nombres de las columnas de una tabla unidimensional se obtienen con la función `names()`.
+
+```{r}
+names(table(x))
+
+names(table(Respuestas))
+```
+En la `table` de un vector sólo aparecen los nombres de los niveles presentes en el vector. Si el tipo de datos cualitativos usado tenía más niveles y queremos que aparezcan explícitamente en la tabla (con frecuencia 0), hay que transformar el vector en un factor con los niveles deseados.
+
+```{r}
+z=factor(x, levels=1:7) #Los niveles serán 1,2,3,4,5,6,7 
+z
+table(z)
+```
+
+Podemos pensar que una tabla unidimensional es como un vector de números donde cada entrada está identificada por un nombre: el de su columna. Para referirnos a una entrada de una tabla unidimensional, podemos usar tanto su posición como su nombre (entre comillas, aunque sea un número).
+
+```{r}
+table(x)[3] #La tercera columna de table(x)
+table(x)["7"] #¿La columna de table(x) con nombre 7?
+```
+
+
+```{r}
+table(x)["5"] #La columna de table(x) con nombre 5
+3*table(x)[2] #El triple de la segunda columna de table(x)
+```
+Las tablas de contingencia aceptan la mayoría de las funciones que ya hemos utilizado para vectores.
+
+```{r}
+sum(table(x)) #Suma de las entradas de table(x)
+sqrt(table(Respuestas)) #Raíces cuadradas de las entradas de table(Respuestas)
+```
+
+La tabla de <l class="definition">frecuencias relativas</l> de un vector se puede calcular aplicando la función `prop.table()` a su `table`. El resultado vuelve a ser una tabla de contingencia unidimensional.
+
+```{r}
+prop.table(table(x))
+
+prop.table(table(Respuestas))
+```
+<l class="important">**¡CUIDADO!**</l> La función `prop.table()` se tiene que aplicar al resultado de `table`, no al vector original. Si aplicamos `prop.table()` a un vector de palabras o a un factor, dará un error, pero si la aplicamos a un vector de números, nos dará una tabla.
+
+Esta tabla no es la tabla de frecuencias relativas de la variable cualitativa representada por el vector, sino la tabla de frecuencias relativas de una variable que tuviera como tabla de frecuencias absolutas este vector de números, entendiendo que cada entrada del vector representa la frecuencia de un nivel diferente.
+
+```{r}
+prop.table(x)
+```
+
+```{r}
+X=c(1,1,1)
+prop.table(table(X))
+prop.table(X)
+```
+También podemos calcular la tabla de frecuencias relativas de un vector dividiendo el resultado de `table` por el número de observaciones.
+
+
+```{r}
+table(x)/length(x)
+```
+Dados un vector $x$ y un número natural $n$, la instrucción 
+
+<div class="aligncenter">
+``names(which(table(x)==n))``
+</div>
+
+nos da los niveles que tienen frecuencia absoluta $n$ en $x$.
+```{r}
+table(x)
+names(which(table(x)==1))
+```
+
+En particular, por lo tanto,
+<div class="aligncenter">
+``names(which(table(x)==max(table(x))))``
+</div>
+
+nos da los niveles de frecuencia máxima en $x$: su <l class="definition">moda</l>.
+```{r}
+names(which(table(x)==max(table(x))))
+names(which(table(Respuestas)==max(table(Respuestas))))
+```
+
+
+```{r}
+datos=factor(c("H","M","M","M","H","H","M","M"))
+table(datos)
+table(datos)["M"]
+sum(table(datos))
+
+```
+### Frecuencias Relativas
+
+```{r}
+prop.table(table(datos))
+```
+
+```{r}
+100*prop.table(table(datos))
+```
+tambien lo podemos hacer a mano y obtenemos los mismos resultados
+$$ f_i=\dfrac{n_i}{n}  $$
+```{r}
+table(datos)/length(datos)
+names(table(datos))
+names(which(table(datos)==3))
+moda <- function(d){
+  names(which(table(d)==max(table(d))))
+}
+m_t =moda(datos)
+m_t
+
+```
+la moda del data frame es: `r m_t``
+
+### Tablas de frecuencias bidimensionales
+
+La función `table()` también permite construir tablas de frecuencias conjuntas de dos o más variables. 
+
+Supongamos que el vector `Respuestas` anterior contiene las respuestas a una pregunta dadas por unos individuos cuyos sexos tenemos almacenados en un vector `Sexo`, en el mismo orden que sus respuestas. En este caso, podemos construir una tabla que nos diga cuántas personas de cada sexo han dado cada respuesta.
+
+```{r}
+Sexo= sample(c("H", "M"), size = length(Respuestas), replace = T) #H = hombre, M = mujer
+table(Respuestas ,Sexo)
+```
+Para referirnos a una entrada de una tabla bidimensional podemos usar el sufijo `[ , ]` como si estuviéramos en una matriz o un data frame. Dentro de los corchetes, tanto podemos usar los índices como los nombres (entre comillas) de los niveles.
+
+```{r}
+table(Respuestas ,Sexo)[1,2]
+table(Respuestas ,Sexo)["No","M"]
+```
+
+Como en el caso unidimensional, la función `prop.table()` sirve para calcular tablas bidimensionales de frecuencias relativas conjuntas de pares de variables. Pero en el caso bidimensional tenemos dos tipos de frecuencias relativas:
+
+<l class="definition">Frecuencias relativas globales:</l> para cada par de niveles, uno de cada variable, la fracción de individuos que pertenecen a ambos niveles respecto del total de la muestra.
+
+<l class="definition">Frecuencias relativas marginales:</l> dentro de cada nivel de una variable y para cada nivel de la otra, la fracción de individuos que pertenecen al segundo nivel respecto del total de la subpoblación definida por el primer nivel. 
+
+Dadas dos variables, se pueden calcular dos familias de frecuencias relativas marginales, según cuál sea la variable que defina las subpoblaciones en las que calculemos las frecuencias relativas de los niveles de la otra variable; no es lo mismo la fracción de mujeres que han contestado que sí respecto del total de mujeres, que la fracción de mujeres que han contestado que sí respecto del total de personas que han dado esta misma respuesta.
+
+
+
+La tabla de frecuencias relativas globales se calcula aplicando sin más la función `prop.table()` a la `table`.
+
+```{r}
+prop.table(table(Sexo,Respuestas)) #frec. Relativa Global
+```
+
+De este modo, la tabla `prop.table(table(Sexo,Respuestas))` nos da la fracción del total que representa cada pareja (sexo, respuesta).
+
+
+Para obtener las marginales, debemos usar el parámetro `margin` al aplicar la función `prop.table()` a la `table`. Con `margin=1`  obtenemos las frecuencias relativas de las filas y con `margin=2`, de las columnas.
+
+```{r}
+prop.table(table(Sexo,Respuestas), margin=1) #Por sexo
+prop.table(table(Sexo,Respuestas), margin=2) #Por respuesta
+```
+<!--
+La tabla prop.table(table(Sexo,Respuestas), margin=1) nos da la fracción que representa cada respuesta dentro de cada sexo: por ejemplo, un 66.66 % de las mujeres han contestado que no.
+La tabla prop.table(table(Sexo,Respuestas), margin=2) nos da la fracción que representa cada sexo dentro de cada respuesta: por ejemplo, las mujeres representan el 40 % del total de las personas que han contestado que no.
+-->
+
+
+La función `CrossTable()` del paquete `gmodels` permite producir (especificando el parámetro `prop.chisq=FALSE`) un resumen de la tabla de frecuencias absolutas y las tres tablas de frecuencias relativas de dos variables en un formato adecuado para su visualización.
+
+La leyenda *Cell Contents* explica los contenidos de cada celda de la tabla: la frecuencia absoluta, la frecuencia relativa por filas, la frecuencia relativa por columnas, y la frecuencia relativa global. Esta función dispone de muchos parámetros que permiten modificar el contenido de las celdas, y que puedes consultar en `help(CrossTable)`.
+
+
+
+install.packages("gmodels", dep=TRUE)
+library(gmodels)
+
+
+```{r}
+sex=factor(c("H","M","M","M","H","H","M","M"))
+ans=factor(c("S","N","S","S","S","N","N","S"))
+#CrossTable(sex, ans, prop.chisq = FALSE) 
+
+```
+
+
+Una <l class="definition">tabla de contingencia bidimensional</l> es, básicamente, una matriz con algunos atributos extra. En particular, podemos usar sobre estas tablas la mayoría de las funciones para matrices que tengan sentido para tablas:
+
+- `rowSums()` y `colSums()` se pueden aplicar a una tabla y suman sus filas y sus columnas, respectivamente.
+
+- También podemos usar sobre una tabla bidimensional (o, en general, multidimensional) la función `apply()` con la misma sintaxis que para matrices.
+
+```{r}
+table(sex,ans ) 
+```
+
+```{r}
+colSums(table(sex,ans)) 
+rowSums(table(sex,ans)) 
+```
+
+
+```{r}
+colSums(prop.table(table(sex,ans)))
+rowSums(prop.table(table(sex,ans)))
+```
+
+```{r}
+tt <- table(sex, ans)
+tt # Frec absolutas
+prop.table(tt)## Frecu Rel Global
+prop.table(tt,margin = 1) #Frec rel por sexo
+prop.table(tt,margin=2) #Frec Rel por respuesta
+colSums(tt)
+rowSums(tt)
+colSums(prop.table(tt))## ya esta arriba
+rowSums(prop.table(tt))## ""
+apply(tt, FUN=sum, MARGIN = 1)
+
+
+
+```
+### Multivariante 
+
+#### ejemplo de  tres dimensiones
+```{r}
+ans=sample(c("si","No"), size = 100, replace = TRUE)
+sex=sample(c("H","M"), size = 100, replace = TRUE)
+place=sample(c("San Francisco", "Barcelona", "Valencia", "Cobija", "Asturias"), size=100, replace = TRUE)
+table(sex,ans,place)
+
+
+
+```
+
+```{r}
+ftable(sex,ans,place)
+```
+
+```{r}
+ftable(sex,ans,place, col.vars = c("sex","ans"))
+```
+
+####filtrar las tablas 
+```{r}
+table(sex, ans, place)["M","si", "San Francisco"]
+table(sex, ans, place)[ ,"si", "Valencia"]
+table(sex, ans, place)[ ,"No", ]
+
+
+```
+### Frecuencias relativas
+```{r}
+prop.table(table(sex,ans, place)) #Frec Rel Globales
+prop.table(table(sex,ans, place), margin = 3) #Frec Rel Marginal por pais 
+prop.table(table(sex,ans, place), margin = c(1,3)) #Frec Rel Marginal por sexo y pais
+
+
+
+```
+
+
+
+```{r}
+ftable(prop.table(table(sex,ans, place)))
+```
+
+Analizando una tabla de frecuencias que contiene R 
+```{r}
+HairEyeColor 
+sum(HairEyeColor) -> total
+
+```
+
+El total de individuos de la tabla es `t total`
+
+```{r}
+prop.table(HairEyeColor, margin = 3)
+```
+
+
+
+```{r}
+prop.table(HairEyeColor, margin = c(1,2))
+```
+se puede cambiar el formato de las tablas ó varables de la siguiente manera
+
+```{r}
+aperm(HairEyeColor, perm=c("Sex","Hair","Eye"))
+```
+Para darle formato  a las tablas se usa la libreria kableExtra, la mandamos a kable(datos)
+
+
+### Tablas a partir de data frames de variables cualitativas
+
+Como ya hemos comentado en varias ocasiones, la manera natural de organizar datos multidimensionales en `R` es en forma de data frame. 
+
+En esta sección explicaremos algunas instrucciones para calcular tablas de frecuencias absolutas a partir de un data frame de variables cualitativas. 
+
+Para ilustrarla, usaremos el fichero que se encuentra en el la carpeta de datos:
+
+<div class="aligncenter">
+`"data/EnergyDrink"`
+</div>
+
+Este fichero consiste en una tabla de datos con la siguiente información sobre 122 estudiantes de una Universidad de España: su sexo (variable `sexo`), el estudio en el que están matriculados (variable `estudio`) y si consumen habitualmente bebidas energéticas para estudiar (variable `bebe`).
+
+```{r}
+Beb_Energ=read.table("r-basic-master/data/EnergyDrink",header=TRUE)
+str(Beb_Energ)
+head(Beb_Energ, 4)
+```
+
+
+
+
+Aplicando la función `summary()` a un data frame de variables cualitativas, obtenemos, a modo de resumen, una tabla con las frecuencias absolutas de cada variable.
+
+```{r}
+summary(Beb_Energ)
+```
+```{r}
+table(Beb_Energ)
+```
+
+```{r}
+table(Beb_Energ[c(1,3)])
+```
+```{r}
+ftable(Beb_Energ)
+```
+
+###  Diagrama de barras
+
+El tipo de gráfico más usado para representar variables cualitativas son los <l class="definition">diagramas de barras</l> (`bar plots`). Como su nombre indica, un diagrama de barras contiene, para cada nivel de la variable cualitativa, una barra de altura su frecuencia.
+
+La manera más sencilla de dibujar un diagrama de barras de las frecuencias absolutas o relativas de una variable cualitativa es usando la instrucción `barplot()` aplicada a la tabla correspondiente.
+
+<l class="important">**¡Atención!**</l> Como pasaba con `prop.table()`, el argumento de `barplot` ha de ser una tabla, y, por consiguiente, se ha de aplicar al resultado de `table()` o de `prop.table()`, nunca al vector de datos original.
+
+```{r}
+barplot(table(sex), col=c("lightblue","pink"), main="Diagrama de barras de 
+las frecuencias absolutas\n de la variable \"Sexo\"")
+```
+
+```{r}
+barplot(prop.table(table(ans)), main="Diagrama de barras de frecuencias 
+        relativas\n de la variable \"Respuestas\"")
+```
+
+
+Observado que en las funciones `barplot()` anteriores hemos usado el parámetro `main` para poner título a los diagramas; en general, la función `barplot()` admite los parámetros de `plot` que tienen sentido en el contexto de los diagramas de barras: `xlab`, `ylab`, `main`, etc. Los parámetros disponibles se pueden consultar en `help(barplot)`. Aquí sólo vamos a comentar algunos.
+
+#### Diagrama de barras - Colores
+
+<!--Se pueden especificar los colores de las barras usando el parámetro col. Si se iguala a un solo color, todas las barras serán de este color, pero también se puede especificar un color para cada barra, igualando col a un vector de colores.-->
+```{r}
+par(mfrow=c(1,2))
+barplot(table(Respuestas), col=c("green"))
+barplot(table(Respuestas), col=c("red","blue"))
+par(mfrow=c(1,1))
+```
+
+```{r}
+barplot(table(x), horiz=TRUE)
+```
+
+
+#### Diagrama de barras - Tabla bidimensional
+
+```{r}
+barplot(table(Respuestas,Sexo ), legend.text = TRUE)
+```
+
+
+
+```{r}
+barplot(table(Sexo,Respuestas), beside=TRUE, legend.text=TRUE)
+```
+
+#### Diagrama de barras - Parámetros de las leyendas
+
+```{r}
+
+barplot(table(Respuestas,Sexo), beside=TRUE, names=c("Men", "Women"), 
+        col=c("yellow","lightblue"), legend.text=c("No","Yes"))
+```
+
+### Diagrama circular
+
+Un tipo muy popular de representación gráfica de variables cualitativas son los <l class="definition">diagramas circulares</l>. En un diagrama circular (`pie chart`) se representan los niveles de una variable cualitativa como sectores circulares de un círculo, de manera que el ángulo (o equivalentemente, el área) de cada sector sea proporcional a la frecuencia del nivel al que corresponde. 
+
+Con `R`, este tipo de diagramas se producen con la instrucción `pie`, de nuevo aplicada a una tabla de frecuencias y no al vector original. 
+
+La función `pie` admite muchos parámetros para modificar el resultado: se pueden cambiar los colores con `col`, se pueden cambiar los nombres de los niveles con `names`, se puede poner un título con `main`, etc.; podemos consultar la lista completa de parámetros en `help(pie)`.
+
+
+```{r}
+x = c(4,2,3,5,1,4,3,1,5,2,3,2)
+pie(table(x), main="Diagrama circular de la variable x")
+```
+
+```{r}
+Respuestas1=c("No","Si","Si","Si","Si","Si","No","No","Si","Si","No","Si")
+pie(table(Respuestas1), main="Diagrama circular de la variable Respuestas")
+```
+
+Pese a su popularidad, es poco recomendable usar diagramas circulares porque a veces es difícil, a simple vista, comprender las relaciones entre las frecuencias que representan.
+
+### Gráficos de mosaico
+
+Otra representación de las tablas multidimensionales de frecuencias son los <l class="definition">gráficos de mosaico</l>. Estos gráficos se obtienen sustituyendo cada entrada de la tabla de frecuencias por una región rectangular de área proporcional a su valor. 
+
+En concreto, para obtener el gráfico de mosaico de una tabla bidimensional, se parte de un cuadrado de lado 1, primero se divide en barras verticales de amplitudes iguales a las frecuencias relativas de una variable, y luego cada barra se divide, a lo alto, en regiones de alturas proporcionales a las frecuencias relativas marginales de cada nivel de la otra variable, dentro del nivel correspondiente de la primera variable.
+
+Un gráfico de mosaico de una tabla se obtiene con `R` aplicando la función `plot` a la tabla, o también la función `mosaicplot`. Esta última también se puede aplicar a matrices. 
+
+```{r}
+plot(table(Sexo,Respuestas), main="Gráfico de mosaico de las variables
+     \"Sexo\" y \"Respuestas\"")
+```
+
+En el gráfico de mosaico de una tabla tridimensional, primero se divide el cuadrado en barras verticales de amplitudes iguales a las frecuencias relativas de una variable. 
+
+Luego cada barra se divide, a lo alto, en regiones de alturas proporcionales a las frecuencias relativas marginales de cada nivel de una segunda variable, dentro del nivel correspondiente de la primera variable. 
+
+Finalmente, cada sector rectangular se vuelve a dividir a lo ancho en regiones de amplitudes proporcionales a las frecuencias relativas marginales de cada nivel de la tercera variable dentro de la combinación correspondiente de niveles de las otras dos. 
+
+```{r}
+plot(HairEyeColor, main="Gráfico de mosaico de la tabla HairEyeColor", 
+     col=c("pink","lightblue"))
+```
+
+
+Además de sus parámetros usuales, la función `plot` admite algunos parámetros específicos cuando se usa para producir el gráfico de mosaico de una tabla. Estos parámetros se pueden consultar en `help(mosaicplot)`.
+
+Los paquetes `vcd` y `vcdExtra` incluyen otras funciones que producen representaciones gráficas interesantes de tablas tridimensionales. 
+
+- La función `cotabplot` de `vcd` produce un diagrama de mosaico para cada nivel de la tercera variable.
+- La función `mosaic3d` de `vcdExtra` produce un diagrama de mosaico tridimensional en una ventana de una aplicación para gráficos 3D interactivos.
+
+
+El objeto de datos `HairEyeColor` que lleva predefinido `R` es una tabla de frecuencias absolutas de tres variables cualitativas: color de cabello (`Hair`), color de los ojos (`Eye`) y sexo (`Sex`). 
+
+Vamos a extraer de esta tabla una tabla bidimensional de frecuencias absolutas de las variables `Eye` y `Hair`, sin distinguir según el sexo. La manera más sencilla de obtener esta tabla es sumando las subtablas de frecuencias para hombres y mujeres, y aplicando `as.table()` al resultado para transformarlo en una `table` por si no lo es.
+
+```{r, echo=FALSE}
+HEC=as.table(HairEyeColor[ , , 1]+ HairEyeColor[ , , 2])
+HEC
+```
+
+```{r}
+male <- HairEyeColor[, ,"Male"]
+female <- HairEyeColor[, ,"Female"]
+data <- as.table(male+female)
+data
+
+```
+```{r}
+plot(data, col=c("lightblue" ), main="Diagrama de moisaico de la tabla bidimensional de frecuencias de colores de cabello y ojos")
+```
+
+```{r}
+sum(data)
+colSums(data)
+rowSums(data)
+round(prop.table(colSums(data)),3)
+round(prop.table(rowSums(data)),3)
+
+
+
+```
+representaremos los siguientes datos en diagrama de barras
+
+```{r}
+barplot(prop.table(colSums(data)), ylim=c(0, 0.4), main="Frecuencias Relativas de colores de ojos",
+        col=c("burlywood4", "lightblue", "orange3","lightgreen"))
+```
+
+
+
+```{r}
+barplot(prop.table(rowSums(data)), ylim=c(0, 0.6), main="Frecuencias Relativas de colores de cabello",
+        col=c("black", "burlywood4", "red3","yellow"))
+
+```
+
+Frecuencias relativas globales y  Marginales
+
+```{r}
+round(prop.table(data),3) ## Frecuencias relatvas 
+round(prop.table(data, margin=1),3) ## Marginal Por filas y se lee  de las personas de pelo negro el 63% Tiene ojos marrones etc
+round(prop.table(data, margin=2),3) ## Marginal por columnas y se lee De las personas que tienen los ojos marrones el 30% son morenos el 54% son castaños etc
+```
+
+Grafico de las frecuencias marginales
+
+```{r}
+barplot(prop.table(data, margin=1), beside=TRUE, legend.text = TRUE, ylim = c(0, 0.8), col=c("black", "burlywood4", "red", "gold" ), main = "Frecuencias relativas para el color de pelo\nPara cada color de ojo "  )
+## Beside es para no tener las columnas apiladas si no en bloques (separadas)
+
+```
+
+
+
+
+
+```{r}
+barplot(t(prop.table(data, margin=2)), beside=TRUE, legend.text = TRUE, ylim = c(0, 0.7), col=c("burlywood4", "lightblue", "orange3", "lightgreen" ), main = "Frecuencias relativas para el color de ojos\nPara cada color de pelo "  )
+## Beside es para no tener las columnas apiladas si no en bloques (separadas)
+
+```
+
+
+
+## Estadistica Descriptiva Con Datos Ordinales
+### Datos ordinales
+
+Los <l class="definition">datos ordinales</l> son parecidos a los cualitativos, en el sentido de que son cualidades de los individuos u objetos.
+
+La diferencia existente entre los datos cualitativos y los ordinales reside  en las características que expresan. En el caso de los ordinales, éstas tienen un orden natural que permite "acumular" observaciones.
+
+
+### Frecuencias para datos ordinales (acumulada)
+
+Al trabajar con datos ordinales, el orden de los niveles de los datos nos permite calcular no solo frecuencias absolutas y relativas, sino también <l class="definition">frecuencias acumuladas</l>.
+
+Es decir, podemos contar cuantas veces hemos observado un dato menor o igual a este.
+
+#### Ejemplo 1
+
+<div class = "example">
+**Ejemplo 1**
+
+Suponga que tenemos una muestra de 15 estudiantes de los cuales sabemos su nota en el examen de Estadística. Clasificamos todos estos resultados en Suspenso ($S$), Aprobado ($A$), Notable ($N$) y Excelente ($Ex$) y consideramos su orden natural $S<A<N<Ex$.
+
+Las notas obtenidas han sido las siguientes
+$$S,\ A,\ N,\ Ex,\ S,\ S,\ Ex,\ Ex,\ N,\ A,\ A,\ A,\ A,\ N,\ S$$
+
+Recuerde, que para saber cuantas hay de cada una (su frecuencia absoluta), utilizamos la función `table()`
+
+</div>
+
+
+
+```{r}
+notas = ordered(c("S","A", "N", "Ex", "S", "S", "Ex", "Ex", "N", "A", "A", "A",
+                  "A", "N", "S"), levels = c("S", "A", "N", "Ex"))
+table(notas)
+```
+
+
+<div class = "example">
+
+vea que hay 4 $S$, 5 $A$, 3 $N$ y 3 $Ex$.
+
+</div>
+
+<div class = "example">
+
+En lo referente a **frecuencias absolutas acumuladas**, hay
+
+- 4 estudiantes con $S$ o menos. Ello implica que la frecuencia acumulada de $S$ es 4
+- 9 estudiantes que han obtenido $A$ o menos. Entonces, la frecuencia acumulada de $A$ es 9
+- 12 estudiantes los cuales han obtenido $N$ o menos. Así, la frecuencia acumulada de $N$ es 12
+- 15 estudiantes (todos) que han obtenido $Ex$ o menos. De este modo, la frecuencia acumulada de $Ex$ es 15, o sea, el total.
+</div>
+
+
+<l class = "definition">
+Frecuencia relativa acumulada.
+</l> Es la fracción del total de las observaciones en tanto por 1 que representa su frecuencia absoluta acumulada 
+
+<div class = "example">
+
+Así, las recuencias relativas acumuladas respectivas son
+
+- $S:\ \frac{4}{15} \approx$ `r round(4/15,2)`
+- $A:\ \frac{9}{15}\approx$ `r round(9/15,2)`
+- $N:\ \frac{12}{15}\approx$ `r round(12/15,2)`
+- $Ex:\ \frac{15}{15}=1$
+</div>
+
+En general, supongamos que realizamos $n$ observaciones
+
+$$x_1,\dots,x_n$$
+
+de un cierto tipo de datos ordinales, cuyos posibles niveles ordenados son
+
+$$l_1<l_2<\dots<l_k$$
+
+Por tanto, cada una de las observaciones $x_j$ es igual a algún $l_i$. Diremos que todas estas observaciones forman una <l class="definition">variable ordinal</l>. En nuestro ejemplo anterior, los 4 niveles eran $$S<A<N<Ex$$
+
+Además, nuestro $n = 15$ y  $x_1,\dots,x_{15}$ son las calificaciones obtenidas por los alumnos.
+
+De este modo, con estas notaciones
+
+- Las definiciones de frecuencias absolutas $n_j$ y las relativas $f_j$, para cada nivel $l_j$ son las mismas que en una variable cualitativa.
+- Las frecuencia absoluta acumulada del nivel $l_j$  en esta variable ordinal es el número $N_j$ de observaciones $x_i$ tales que $x_i\le l_j$. Es decir,
+$$N_j=\sum_{i=1}^jn_i$$
+
+- La frecuencia relativa acumulada del nivel $l_j$ en esta variable ordinal es la fracción en tanto por 1 $F_j$ de observaciones $x_i$ tales que $x_i\le l_j$. Es decir,
+$$F_j=\frac{N_j}{n}=\sum_{i=1}^jf_i$$
+
+#### Ejemplo 2
+
+<div class = "example">
+
+**Ejemplo 2**
+
+En un estudio, a un grupo de clientes de un restaurante se les hizo la siguiente pregunta:
+
+"¿Estás contento con el trato ofrecido por los trabajadores del establecimiento?"
+
+Las posibles respuestas forman una escala ordinal con $1<2<3<4<5$.
+
+Supongamos que se recogieron las siguientes respuestas de 50 técnicos:
+
+</div>
+
+```{r}
+set.seed(2018) ## Para que salgan los mismos resultados cada vez que se ejecute
+clientes = sample(1:5, 50, replace = TRUE)
+clientes
+# set.seed(NULL) para que vuelva adquirir valores 
+```
+
+<div class = "example">
+
+En este caso tenemos 5 niveles ($k=5$) y 50 observaciones ($n=50$) que forman una variable ordinal a la que hemos llamado `clientes`.
+
+Hemos calculado todas sus frecuencias (absoluta, relativa, acumulada y relativa acumulada) y las hemos representado en la siguiente tabla.
+
+
+</div>
+
+```{r, echo = FALSE}
+absolut = table(clientes)
+relative = prop.table(absolut)
+acumul = cumsum(absolut)
+rel.acumul = cumsum(relative)
+absolut = (as.matrix(absolut))
+relative = (as.matrix(relative))
+acumul = (as.matrix(acumul))
+rel.acumul = (as.matrix(rel.acumul))
+
+clientela = data.frame(absolut,relative,acumul,rel.acumul)
+colnames(clientela) = c("Absoluta", "Relativa", "Acumulada", "Rel. Acumulada")
+clientela
+
+```
+
+### Frecuencia relativa acumulada
+
+Los gráficos para frecuencias absolutas y relativas absolutas de variables ordinales son exactamente los mismos que para las variables cualitativas.
+
+También podemos utilizar diagramas de barras para describir frecuencias acumuladas: en este caso, la altura de cada barra debe ser igual a la frecuencia acumulada del nivel respectivo. Además, estos niveles deben de aparecer ordenados de manera ascendente, de forma que las alturas de las barras también tengan un orden ascendente.
+
+No obstante, se recomienda no hacer uso de diagramas circulares a la hora de representar frecuencias acumuladas, debido a que éstos no representan la información sobre la acumulación de datos de forma fácil de entender a simple vista.
+
+
+
+#### Función cumsum()
+
+Recordemos la función `cumsum()` esta puede ser utilizada a la hora de calcular frecuencias acumuladas.
+
+Retomemos el ejemplo anterior de las notas de los estudiantes y calculemos y representemos en un diagrama de barras las frecuencias acumuladas de la muestra de notas.
+
+```{r}
+notas
+fAbs = table(notas) #Frec. abs.
+cumsum(fAbs) #Frec. abs. acumuladas
+```
+
+```{r, fig.height=3.75}
+cumsum(prop.table(fAbs)) #Frec. relativas acumuladas
+barplot(fAbs, main = "Diagrama de barras de frecuencias absolutas")
+```
+
+```{r}
+barplot(cumsum(fAbs), main = "Diagrama de barras de frecuencias absolutas acumuladas")
+```
+
+
+Podríamos haber calculado las frecuencias relativas acumuladas de la forma
+
+```{r}
+cumsum(table(notas))/length(notas)
+cumsum(table(notas)/length(notas))
+```
+Pero no podemos hacer `prop.table(cumsum(table(notas)))`.
+
+
+#### Ejemplo 3
+
+<div class = "example">
+
+**Ejemplo 3**
+
+Se ha evaluado el tamaño de los cuellos de 100 jirafas. Los niveles que se han utilizado se los considera ordenados de la siguiente manera:
+
+$$\text{Muy.corto}<\text{Corto}<\text{Normal}<\text{Largo}<\text{Muy.largo}$$
+
+Los valores obtenidos en dicho estudio han sido los siguientes
+
+</div>
+
+
+```{r, echo = FALSE}
+set.seed(2018)
+longitud = sample(1:5,100, replace = TRUE)
+longitud = ordered(longitud)
+levels(longitud) = c("Muy.corto","Corto","Normal","Largo","Muy.largo")
+```
+
+```{r}
+longitud
+```
+```{r, echo = FALSE}
+set.seed(NULL)
+```
+
+
+<div class = "example">
+
+Estudiemos sus frecuencias
+
+</div>
+
+```{r}
+Fr.Abs = table(longitud)
+Fr.Abs
+Fr.Rel = prop.table(Fr.Abs)
+Fr.Rel
+```
+
+
+```{r}
+Fr.Acum = cumsum(Fr.Abs)
+Fr.Acum
+Fr.RAcum = cumsum(Fr.Rel)
+Fr.RAcum
+```
+
+
+<div class = "example">
+
+La instrucción `barplot` produce el siguiente diagrama de barras de frecuencias relativas acumuladas
+
+</div>
+
+```{r}
+barplot(Fr.RAcum, main = "Diagrama de frecuencias relativas acumuladas")
+```
+
+
+Para calcular frecuencias acumuladas en una tabla multidimensional, hay que aplicar a la tabla la función `cumsum` mediante la función `apply` que ya explicábamos para matrices. En este caso en concreto, la sintaxis de la instrucción sería
+
+`apply(tabla, MARGIN=..., FUN=cumsum)`
+
+donde el valor `MARGIN` ha de ser el de la dimensión en la que queremos acumular las frecuencias: 1 si queremos hacerlo por filas, 2 para hacerlo por columnas, etc. Lo veremos todo más claro con un ejemplo
+
+#### Ejemplo 4{.example}
+
+**Ejemplo 4**
+
+Supongamos que en el ejemplo anterior, el de las jirafas, estas provienen de 4 zonas diferentes, A,B,C y D, de manera que las 30 primeras son de la zona A, las 25 siguientes de la B, las 35 siguientes de la C y las 10 últimas de la D. Nos interesa estudiar la distribución de las longitudes según la zona.
+
+Vamos a organizar todos estos datos en un data frame llamado `jirafas`. Para que nos sea más fácil visualizar la información, es conveniente que las filas de las tablas de frecuencias correspondan a las zonas. Por lo tanto, al definir el data frame, entraremos como primera variable la de la muestra las zonas. Así, conseguiremos que éstas aparezcan en las filas al aplicarle la función table.
+
+
+```{r}
+zonas = rep(c("A","B","C","D"), c(30,25,35,10)) #se crean  A 30 veces, B 25 veces asi sucesivamente 
+jirafas = data.frame(zonas,longitud) #se crea un data Frame
+str(jirafas)
+head(jirafas)
+```
+
+
+
+<div class = "example">
+
+Para calcular la tabla de frecuencias absolutas acumuladas de las longitudes por zonas y como las zonas definen las filas de la tabla anterior, debemos utilizar la función `apply` con `MARGIN = 1`.
+</div>
+
+```{r}
+apply(table(jirafas), MARGIN = 1, FUN = cumsum)
+```
+
+
+<div class = "example">
+
+Observe que la tabla se ha traspuesto. Resulta que cuando se aplica `apply` a una `table` bidimensional, `R` intercambia, en caso de ser necesario, filas por columnas en el resultado para que la dimensión de la tabla resultante en la que se haya aplicado la función sea la de las columnas.
+
+Con lo cual, para volver a tener las zonas en las filas, hay que trasponer el resultado de la función `apply`.
+</div>
+
+```{r}
+t(apply(table(jirafas), MARGIN = 1, FUN = cumsum))
+```
+
+<div class = "example">
+
+Vamos ahora a calcular la tabla de frecuencias relativas acumuladas de las longitudes de cuello por zonas. Para conseguirlo, y en una única instrucción, primero calculamos la tabla de frecuencias relativas por filas, a continuación, con las funciones `apply` y `cumsum` las acumulamos y, finalmente, trasponemos el resultado.
+</div>
+
+```{r}
+t(apply(prop.table(table(jirafas), margin = 1), MARGIN = 1, FUN = cumsum))
+```
+
+<div class = "example">
+
+Vamos ahora a dibujar el diagrama de barras por bloques de esta tabla. Nos interesa que las barras de este diagrama se agrupen por zonas. Entonces, tendremos que aplicar `barplot` a la tabla sin trasponer.
+
+Además, vamos a colocar la leyenda en la esquina superior izquierda para que no se superponga a ninguna barra. También reduciremos el tamaño del texto de la leyenda para quede visible completamente.
+
+</div>
+
+```{r}
+Diagrama = apply(prop.table(table(jirafas), margin = 1), MARGIN = 1, FUN = cumsum)
+barplot(Diagrama, ylim=c(0,1.2), beside = TRUE, legend = TRUE, main = "Diagrama de barras de frecuencias relativas acumuladas de longitudes por zonas",
+args.legend=list(x="topleft", cex=0.55))  # cex hace la letra mas pequeña
+```
+
+#### Ejemplo 5
+
+<div class = "example">
+**Ejemplo 5**
+
+Consideremos el data frame `datacrab` y arreglemos los datos.
+</div>
+
+```{r}
+crabs = read.table("./r-basic-master/data/datacrab.txt", header = TRUE)
+crabs = crabs[,-1] #Omitimos la primera columna
+str(crabs)
+```
+
+<div class = "example">
+La variable numérica `width` contiene la anchura de cada cangrejo
+</div>
+
+
+```{r}
+table(crabs$width)
+```
+Un cangrejo mide 21, otro 22, tres mas 22.5 así sucesivamente
+  
+
+<div class = "example">
+
+Vamos a convertir a la variable `width` en una variable ordinal que agrupe las entradas de la variable original en niveles. 
+
+La manera más sencilla de llevarlo a cabo es utilizando la función `cut`, que estudiaremos en detalle en lecciones posteriores. Por ahora, basta con saber que la instrucción dividirá el vector numérico `crabs$width` en intervalos de extremos los puntos especificados en el argumento `breaks`. El parámetro `right = FALSE` sirve para indicar que los puntos de corte pertenecen la intervalo de su derecha, e `Inf` indica $\infty$.
+
+Por lo tanto, podemos utilizar la siguiente instrucción
+</div>
+
+```{r}
+intervalos = cut(crabs$width, breaks = c(21,25,29,33,Inf), right = FALSE, 
+                 labels = c("21-25", "25-29", "29-33", "33-..."))
+```
+
+
+<div class = "example">
+
+El resultado de la instrucción es un factor que tiene como niveles estos intervalos, identificados con las etiquetas especificadas en el parámetro `labels`. Como nostros vamos a usar estos intervalos como niveles de una variable ordinal, además convertiremos este factor en ordenado.
+</div>
+
+```{r}
+crabs$width.rank = ordered(intervalos)
+str(crabs)
+```
+
+
+<div class = "example">
+
+Nos interesa estudiar la distribución de las anchuras de los cangrejos según el número de colores. Por lo tanto, vamos a calcular las tablas bidimensionales de frecuencias relativas y relativas acumuladas de los intervalos de las anchuras en cada nivel de `color` y las representaremos por medio de diagramas de barras.
+
+La tabla de frecuencias absolutas de los pares se puede obtener aplicando `table` al data frame formado por la primera y última columnas.
+
+</div>
+
+```{r}
+Tabla = table(crabs[,c(1,6)])
+Tabla
+```
+
+
+```{r}
+Fr.rel = round(prop.table(Tabla,margin = 1),3)
+Fr.rel
+```
+
+
+
+```{r}
+Fr.rel.acu = round(apply(prop.table(Tabla, margin = 1), MARGIN = 1, FUN = cumsum), 3)
+t(Fr.rel.acu)
+```
+
+
+
+```{r}
+azul = c("cyan", "cyan4", "cyan1", "cyan3")
+
+barplot(t(Fr.rel), beside = TRUE, legend = TRUE, ylim = c(0,1), col = azul, 
+        main = "Diagrama de barras de frecuencias relativas", 
+        args.legend=list(x = "topright", cex=0.55))
+```
+
+
+```{r}
+barplot(Fr.rel.acu, beside = TRUE, legend = TRUE, col = azul, 
+        main = "Diagrama de barras de frecuencias relativas acumuladas", 
+        args.legend=list(x = "topleft", cex=0.55))
+```
+
+## Estadistica Descriptiva Con Datos Cuantitativos  
+
+
+
+### Datos cuantitativos
+
+Los <l class = "definition">datos cuantitativos</l> son los que expresan cantidades que se representan mediante números. Éstos se suelen clasificar en continuos y discretos.
+
+- Los <l class = "definition">datos continuos</l> son los que, si existiese la posibilidad de medirlos con precisión infinita, en principio podrían tomar todos los valores de un intervalo de la recta real. A modo de ejemplo, el peso, la altura, el tiempo... son datos de este tipo.
+
+- Por su parte, los <l class = "definition">datos discretos</l> son los que pueden tomar un solo conjunto contable de valores. El número de colores de un gato, el número de individuos que conforman una población son algunos ejemplos de este tipo de datos.
+
+Conviene tener en cuenta que esta división es solo teórica. Es decir, en la práctica, todos estos datos son discretos puesto que la precisión infinita no existe. Sin embargo, es necesario de vez en cuando suponer los datos de tipo continuo para así poder utilizar técnicas específicas en su análisis.
+
+
+A la hora de estudiar <l class = "definition">variables cuantitativas</l>, podemos utilizar las frecuencias que hemos visto hasta el momento: absoluta, relativa, acumulada y relativa acumulada. Esto se debe a que podemos ordenar los datos cuantitativos en el orden natural de los números reales.
+
+En este caso, disponemos de muchas otras técnicas descriptivas aparte de las frecuencias, puesto que estamos trabajando con números reales y podemos operar con ellos. 
+
+Los datos cuantitativos admiten dos tipos de tratamiento según trabajemos con los <l class = "definition">raw data</l> (datos brutos u originales) o bien los agrupemos en clases o intervalos. 
+
+En esta lección trabajaremos sobre la primera situación. En la siguiente, estudiaremos la descripción de datos cuantitativos agrupados. 
+
+### Frecuencias 
+
+#### Frecuencias de datos cuantitativos
+
+El tratamiento de las frecuencias de datos cuantitativos es similar al de los datos ordinales. La cosa cambia ligeramente debido a que no se tienen en cuenta todos los niveles posibles, sino únicamente los observados.
+
+
+#### Ejemplo 1
+
+<div class= "example">
+
+**Ejemplo 1**
+
+Se han pedido las edades a 20 clientes de un museo. Las respuestas obtenidas han sido las siguientes:
+
+</div>
+
+```{r}
+edad = c(15,18,25,40,30,29,56,40,13,27,42,23,11,26,25,32,30,40,33,29)
+```
+
+<div class= "example">
+
+Recordemos que solamente nos interesan las frecuencias de las edades observadas. Es decir, solamente nos interesan 
+
+</div>
+
+```{r}
+table(edad)
+```
+
+
+<div class = example>
+Calculemos el resto de frecuencias como ya sabemos
+</div>
+
+```{r}
+round(prop.table(table(edad)),3)#frec relativas
+cumsum(table(edad))
+```
+
+
+```{r}
+round(cumsum(prop.table(table(edad))),3)
+```
+
+#### Frecuencias de datos cuantitativos
+
+En general, supongamos que tenemos $n$ observaciones de una propiedad que se mide con un número real y obtenemos la variable cuantitativa formada por los datos 
+$$x_1,\dots, x_n$$
+
+Sean ahora $X_1,\dots,X_k$ los valores distintos que aparecen en esta lista de datos y considerémoslos ordenados
+$$X_1<X_2<\cdots<X_k$$
+
+
+Entonces, en esta variable cuantitativa
+
+- La frecuencia absoluta de $X_i$ es el número $n_i$ de elementos que son iguales a $X_i$
+- La frecuencia relativa de $X_i$ es $f_i=\frac{n_i}{n}$
+- La frecuencia absoluta acumulada de $X_i$ es $N_i=\sum_{j=1}^in_j$
+- La frecuencia relativa acumulada de $X_i$ es $F_i=\frac{N_i}{n}$
+
+#### Ejemplo 2
+
+<div class = "example">
+**Ejemplo 2**
+
+Lanzamos 25 veces un dado de 6 caras y anotamos las puntuaciones obtenidas en cada tirada.
+
+En este caso, $n=25$ y, los distintos valores observados son 
+
+$$X_1 = 1,\ X_2 = 2,\ X_3 = 3,\ X_4 = 4,\ X_5 = 5,\ X_6 = 6$$
+
+Nos interesa ahora calcular las frecuencias de este experimento. Además, las organizaremos en un data frame para observarlas de forma más clara y sencilla en una tabla.
+</div>
+
+```{r}
+set.seed(162017)
+dados = sample(1:6,25,replace = TRUE)
+dados
+set.seed(NULL)
+```
+
+
+```{r}
+table(dados)
+round(prop.table(table(dados)),2)
+cumsum(table(dados))
+```
+
+
+
+```{r}
+round(cumsum(prop.table(table(dados))),2)
+dados.df = data.frame(Puntuacion = 1:6,
+                      Fr.abs = as.vector(table(dados)),
+                      Fr.rel = as.vector(round(prop.table(table(dados)),2)),
+                      Fr.acu = as.vector(cumsum(table(dados))),
+                      Fr.racu = as.vector(round(cumsum(prop.table(table(dados))),2)))
+```
+nota: los datos  los convertimos como vector, dado que si no lo hacemos, tendremos filas repetidas con los nombres 1,2,3,4...
+
+
+
+```{r}
+dados.df
+``` 
+
+<l class="important">¡OJO!</l> Para entrar una tabla unidimensional como una variable en un data frame, es conveniente transformarla en vector con `as.vector`. Si no, cada `table` y cada `prop.table` añadirían una columna extra con los nombres de los niveles.
+
+### Medidas de tendencia central
+
+
+Las <l class="definition">medidas de tendencia central</l> son las que dan un valor representativo a todas las observaciones. Algunas de las más importantes son:
+
+- La <l class="definition">media aritmética</l> o <l class="definition">valor medio</l>
+$$\bar{x} = \frac{\sum_{i=1}^nx_i}{n}=\frac{\sum_{j=1}^kn_jX_j}{n}=\sum_{j=1}^kf_jX_j$$
+- La <l class="definition">mediana</l>, que representa el valor central en la lista ordenada de observaciones.
+- La <l class="definition">moda</l> es el valor (o valores) de máxima frecuencia (absoluta o relativa, el resultado será el mismo).
+
+### Mediana
+
+La definición formal de la mediana es la siguiente. Denotando por $$x_{(1)}\le x_{(2)}\le\dots\le x_{(n)}$$ los datos de la variable cuantitativa ordenados de menor a mayor, la mediana es
+
+- Si $n$ par, la medio de los dos datos centrales $$\frac{x_{(\frac{n}{2})}+x_{(\frac{n}{2}+1)}}{2}$$
+- Si $n$ impar, el dato central $$x_{(\frac{n+1}{2})}$$ 
+
+#### Ejemplo 1
+
+<div class = "example">
+Recordemos el ejemplo de las edades.
+</div>
+
+```{r}
+sort(edad) #Ordenamos los datos por su orden natural
+table(edad)
+```
+
+<div class = "example">
+En este caso, la moda es 40, la mediana es $\frac{29+29}{2}=29$ y la media aritmética es
+
+<div class = "aligncenter">
+$\frac{11+13+15+18+23+25+25+26+27+29+29+30+30+32+33+40+40+40+42+56}{20}=29.2$
+</div>
+</div>
+
+
+
+#### Ejemplo 2
+
+<div class = "example">
+Recordemos el ejemplo de los dados.
+</div>
+
+```{r}
+dados.df
+```
+
+<div class = "example">
+En este caso, la moda son dos valores: el 2 y el 3. La mediana es $x_{(13)}=$ 3 y la media aritmética es `r sum(dados)/length(dados)`
+</div>
+
+### Medidas de tendencia central en R
+
+Vamos a calcular la media aritmética, mediana y moda de los dos ejemplos anteriores con instrucciones de R.
+
+```{r}
+mean(edad) #La media aritmética
+mean(dados)
+median(edad) #La mediana
+```
+
+```{r}
+median(dados)
+as.numeric(names(which(table(edad)==max(table(edad))))) #La moda
+as.numeric(names(which(table(dados)==max(table(dados)))))
+```
+
+Cuando trabajamos con datos cuantitativos, es conveniente que el resultado lo demos como un número. De ahí que hayamos aplicado la función `as.numeric`.
+
+
+### Medidas de posición
+
+Las <l class = "definition">medidas de posición</l> estiman qué valores dividen las observaciones en unas determinadas proporciones.
+
+Los valores que determinan estas posiciones son conocidos como los <l class = "definition">cuantiles</l>.
+
+Pensándolo de este modo, la mediana puede interpretarse como una medida de posición, debido a que divide la variable cuantitativa en dos mitades.
+
+
+Dada una proporción $p\in(0,1)$, el <l class = "definition">cuantil de orden $p$</l> de una variable cuantitativa, $Q_p$, es el valor más pequeño tal que su frecuencia relativa acumulada es mayor o igual a $p$.
+
+Dicho de otro modo, si tenemos un conjunto de observaciones $x_1,\dots,x_n$ y los ordenamos de menor a mayor, entonces $Q_p$ será el número más pequeño que deja a su izquierda (incluyéndose a sí mismo) como mínimo a la fracción $p$ de los datos. Es decir, $p\cdot n$.
+
+Así, ahora es más claro ver que la mediana vendría a ser $Q_{0.5}$, el cuantil de orden 0.5.
+
+
+####  Ejemplo 3
+
+<div class = "example">
+**Ejemplo 3**
+
+Consideremos un experimento en el que lanzamos 50 veces un dado de 4 caras y obtenemos los siguientes resultados
+</div>
+
+```{r}
+set.seed(260798)
+dado = sample(1:4, 50, replace = TRUE)
+set.seed(NULL)
+length(dado)
+dado = sort(dado) #Los ordenamos de menor a mayor
+dado
+```
+
+
+```{r}
+df.dado = data.frame(Puntuacion = 1:4,
+                      Fr.abs = as.vector(table(dado)),
+                      Fr.rel = as.vector(round(prop.table(table(dado)),2)),
+                      Fr.acu = as.vector(cumsum(table(dado))),
+                      Fr.racu = as.vector(round(cumsum(prop.table(table(dado))),2)))
+df.dado
+```
+
+<div class = "example">
+Si nos piden el cuantil $Q_{0.3}$, sabemos que este es el primer elemento de la lista cuya frecuencia relativa acumulada es mayor o igual a 0.3. Este se corresponde con la puntuación 1.
+</div>
+
+<div class = "example">
+También podríamos hallarlo de otro modo: fijándonos en la lista ordenada de puntuaciones, el cuantil $Q_{0.3}$ sería el primer elemento de dicha lista tal que fuera mayor o igual que, como mínimo, el 30% de los datos. Si calculamos el 30% de 50, obtenemos que es 15. Esto lo que nos dice es que el cuantil que buscamos es el número que se encuentra en la quinceava posición de la lista ordenada.
+</div>
+
+```{r}
+dado[15]
+```
+
+
+#### Cuantiles
+
+Algunos cuantiles tienen nombre propio:
+
+- Los <l class="definition">cuartiles</l> son los cuantiles $Q_{0.25},Q_{0.5}$ y $Q_{0.75}$. Respectivamente, son llamados primer, segundo y tercer cuartil. El primer cuartil, $Q_{0.25}$, será el menor valor que es mayor o igual a una cuarta parte de las observaciones y $Q_{0.75}$, el menor valor que es mayor o igual a tres cuartas partes de los datos observados.
+- El cuantil $Q_{0.5}$ es la mediana
+- Los <l class="definition">deciles</l> son los cuantiles $Q_p$ con $p$ un múltiplo de 0.1.
+- Los <l class="definition">percentiles</l> son los cuantiles $Q_p$ con $p$ un múltiplo de 0.01.
+
+
+
+La definición de cuantil anteriormente dada es orientativa. La realidad es que, exceptuando el caso de la mediana, no hay consenso sobre cómo deben calcularse los cuantiles. En verdad, existen diferentes métodos que pueden dar lugar a soluciones distintas.
+
+Nuestro objetivo no es el de encontrar el primer valor de una muestra cuya frecuencia relativa acumulada en la variable sea mayor o igual a $p$, sino estimar el valor de esta cantidad para el total de la población.
+
+Para calcular los cuantiles de orden $p$ de una variable cualitativa $x$ con `R`, se utiliza la instrucción `quantile(x,p)`, la cual dispone de 9 métodos diferentes que se especifican con el parámetro `type`. El valor por defecto es `type = 7` y no hace falta especificarlo, como veremos en el siguiente ejemplo. 
+
+
+#### Ejemplo 4
+
+```{r}
+set.seed(0)
+dados2 = sample(1:6,15, replace = TRUE)
+dados2
+set.seed(NULL)
+quantile(dados2,0.25) #Primer cuartil
+quantile(dados2,0.8)
+```
+
+####  Medidas de dispersión
+
+Las <l class = "definition">medidas de dispersión</l> evalúan lo dispersos que están los datos. Algunas de las más importantes son:
+
+- El <l class = "definition">rango</l> o <l class = "definition">recorrido</l>, que es la diferencia entre el máximo y el mínimo de las observaciones.
+
+- El <l class = "definition">rango intercuartílico</l>, que es la diferencia entre el tercer y primer cuartil, $Q_{0.75}-Q_{0.25}$.
+
+- La <l class = "definition">varianza</l>, a la que denotaremos por $s^2$, es la media aritmética de las diferencias al cuadrado entre los datos $x_i$ y la media aritmética de las observaciones, 
+$\bar{x}$. $$s^2 = \frac{\sum_{j=1}^n(x_j-\bar{x})^2}{n}=\frac{\sum_{j=1}^kn_j(X_j-\bar{x})^2}{n}=\sum_{j=1}^kf_j(X_j-\bar{x})^2$$.
+
+- La <l class = "definition">desviación típica</l> es la raíz cuadrada positiva de la varianza, $s=\sqrt{s^2}$.
+
+- La <l class = "definition">varianza muestral</l> es la corrección de la varianza. La denotamos por $\tilde{s}^2$ y se corresponde con
+$$\tilde{s}^2 = \frac{n}{n-1}s^2 = \frac{\sum_{j=1}^n(x_i-\bar{x})^2}{n-1}$$
+- La <l class = "definition">desviación típica muestral</l>, que es la raíz cuadrada positiva de la varianza muestral, $\tilde{s} = \sqrt{\tilde{s}^2}$
+
+###  Propiedades de la varianza
+
+<l class = "prop"> Propiedades de la varianza.</l>
+
+- $s^2\ge 0$. Esto se debe a que, por definición, es una suma de cuadrados de números reales.
+- $s^2 = 0\Longrightarrow x_j-\bar{x}=0\ \forall j= 1,\dots,n$. En consecuencia, si $s^2=0$, entonces todos los datos son iguales.
+- $s^2 =\frac{\sum_{j=1}^nx_j^2}{n}-\bar{x}^2$. Es decir, la varianza es la media de los cuadrados de los datos menos el cuadrado de la media aritmética de estos.
+
+###  Varianza y varianza muestral
+
+La diferencia entre ambas definiciones viene por la interrelación entre la estadística descriptiva y la inferencial.
+
+Por un lado, es normal medir cómo varían los datos  cuantitativos mediante su varianza definida como la media aritmética de las distancias al cuadrado de los datos a su valor medio. No obstante, por otro lado, el conjunto de nuestras observaciones, por lo normal, será una muestra de una población mucho mayor y nos interesará estimar entre otras muchas cosas su variabilidad.
+
+La varianza de una muestra suele dar valores más pequños que la varianza de la población, mientras que la varianza muestral tiende a dar valores alrededor de la varianza de la población.
+
+Esta corrección, para el caso de una muestra grande no es notable. Dividir $n$ entre $n-1$ en el caso de $n$ ser grande no significa una gran diferencia y aún menos si tenemos en cuenta que lo que tratamos es de estimar la varianza de la población, no de calcularla de forma exacta.
+
+En cambio, si la muestra es relativamente pequeña (digamos $n<30$), entonces la varianza muestral aproxima significativamente mejor la varianza de la población que la varianza.
+
+La diferencia entre desviación típica y desviación típica muestral es análoga.
+
+Con `R`, calcularemos la varianza y la desviación típica **muestrales**. Con lo cual, si queremos calcular las que no son muestrales, tendremos que multiplicarlas por $\frac{n-1}{n}$, donde $n$ es el tamaño de la muestra. Lo veremos a continuación.
+
+### Varianza y desviación típica
+
+Nótese que tanto la varianza como la desviación típica dan una información equivalente. Entonces, es comprensible preguntarse por qué se definen ambas medidas si con una basta. Pues bien, las unidades de la varianza (metros, litros, años...), ya sea muestral o no, están al cuadrado, mientras que las de la desviación típica no.
+
+
+
+
+####  Medidas de dispersión con R
+
+Medida de dispersión |  Instrucción                                
+--------------------|--------------------
+Valores mínimo y máximo | `range(x)` 
+Rango | `diff(range(x))` 
+Rango intercuartílico | `IQR(x, type = ...)`
+Varianza muestral | `var(x)` 
+Desviación típica muestral | `sd(x)` 
+Varianza | `var(x)*(length(x)-1)/length(x)` 
+Desviación típica | `sd(x)*sqrt((length(x)-1)/length(x))` 
+
+####  Ejemplo 4
+
+```{r}
+dados2
+diff(range(dados2))
+IQR(dados2)
+var(dados2)
+```
+
+
+```{r}
+sd(dados2)
+n = length(dados2)
+var(dados2)*(n-1)/n
+sd(dados2)*sqrt((n-1)/n)
+```
+
+###  Función summary()
+
+La función `summary` aplicada a un vector numérico o a una variable cuantitativa nos devuelve un resumen estadístico con los valores mínimo y máximo del vector, sus tres cuartiles y su media.
+
+Al aplicar esta función a un data frame, esta se aplica a todas sus variables de forma simultánea. De este modo, podemos observar rápidamente si hay diferencias notables entre sus variables numéricas.
+
+
+```{r}
+cangrejos = read.table("r-basic-master/data/datacrab.txt", header = TRUE) #Cargamos el data frame
+cangrejos = cangrejos[-1] #Eliminamos la primera columna
+summary(cangrejos) #Aplicamos la función summary
+```
+
+####  Ejemplo 5
+
+<div class = "example">
+Si nos interesa comparar numéricamente los pesos y las anchuras de los cangrejos con 3 colores con los que tienen 5 colores, utilizaríamos las siguientes instrucciones:
+</div>
+
+```{r}
+summary(subset(cangrejos, color == 3,c("weight","width")))
+
+```
+
+
+```{r}
+summary(subset(cangrejos, color == 5,c("weight","width")))
+```
+
+<div class = "example">
+Y deducimos así que los cangrejos con 5 colores pesan ligeramente menos y tienen menos anchura que los que tienen 3 colores. 
+</div>
+
+
+### Función by()
+
+La función `by()` se utiliza para aplicar una determinada función a algunas columnas de un data frame segmentándolas según los niveles de un factor.
+
+La sintaxis de esta función es `by(columnas, factor, FUN = función)`.
+
+Con lo cual, haciendo uso de la función `by` y especificando `FUN = summary`, podremos calcular el resumen estadístico anteriormente comentado a subpoblaciones definidas por los niveles de un factor.
+
+#### Ejemplo 6
+
+<div class = "example">
+
+Para este ejemplo, haremos uso del famoso dataset iris.
+
+Si nos interesase calcular de forma rápida y sencilla las longitudes de sépalos y petalos en función de la especie, necesitaríamos hacer uso de la instrucción mostrada a continuación. 
+
+Por motivos de espacio, no se muestran los resultados proporcionados por R.
+</div>
+
+```{r, results="hide"}
+by(iris[,c(1,3)], iris$Species, FUN = summary)
+```
+
+### Función aggregate()
+
+Tanto la función `by` como la función `aggregate` son equivalentes. No obstante, los resultados se muestran de forma diferente en función de cual utilicemos.
+
+En el caso del ejemplo anterior, convenía más hacer uso de la función `by`.
+
+Podemos comprobarlo introduciendo por consola la siguiente instrucción:
+
+```{r, results="hide"}
+aggregate(cbind(Sepal.Length,Petal.Length)~Species, data=iris, FUN=summary)
+```
+
+####  NA
+
+La mayoría de las funciones vistas a lo largo de este tema no funcionan bien con valores `NA`.
+
+Para no tenerlos en cuenta a la hora de aplicar estas funciones, hay que especificar el parámetro `na.rm = TRUE` en el argumento de la función.
+
+####  Ejemplo 7
+
+```{r}
+dadosNA = c(dados2,NA)
+dadosNA
+mean(dadosNA)
+mean(dadosNA, na.rm = TRUE)
+```
+
+
+
+###  Diagramas de caja
+
+
+El conocido <l class = "definition">diagrama de caja</l> o <l class = "definition">box plot</l> es un tipo de gráfico que básicamente, remarca 5 valores estadísticos:
+
+- La mediana, representada por la línea gruesa que divide la caja
+- El primer y tercer cuartil, que son los lados inferior y superior, respectivamente. De este modo, la altura de la caja es el rango intercuantílico
+- Los extremos, los valores $b_{inf},b_{sup}$, son los <l class = "definition">bigotes</l> (<l class = "definition">whiskers</l>) del gráfico. Si $m$ y $M$ son el mínimo y máximo de la variable cuantitativa, entonces los extremos se calculan del siguiente modo:
+$$b_{inf}=\max\{m,Q_{0.25}-1.5(Q_{0.75}-Q_{0.25})\}$$
+$$b_{sup}=\min\{M,Q_{0.75}+1.5(Q_{0.75}-Q_{0.25})\}$$
+- <l class = "definition">Valores atípicos</l> o <l class = "definition">outliers</l>, que son los que están más allá de los bigotes. Se marcan como puntos aislados.
+
+####  Más sobre los bigotes
+
+Por su definición, concluimos que los bigotes marcan el mínimo y máximo de la variable cuantitativa, a no ser que haya datos muy alejados de la caja intercuantílica. 
+
+En tal caso, el bigote inferior marca el valor 1.5 veces el rango intercuantílico por debajo de $Q_{0.25}$, mientras que el superior marca el valor 1.5 veces el rango intercuantílico por encima de $Q_{0.75}$
+
+### Función boxplot
+
+La instrucción `boxplot()` dibuja diagramas de caja en R.
+
+```{r}
+boxplot(dados2, main = "Un diagrama de caja")
+```
+
+
+También podemos dibujar diversos diagramas de caja en un mismo gráfico. De este modo, se pueden comparar con mayor facilidad:
+
+```{r}
+boxplot(dado,dados,dados2)
+```
+
+Además, podemos dibujar el diagrama de caja de todas las variables de un data frame en un solo paso aplicando la instrucción `boxplot(data.frame)`.
+
+La mayoría de veces, dicho gráfico no será del todo satisfactorio. Dibujar diagramas de factores no tiene sentido alguno. Estos gráficos se pueden manipular incluyendo solo las variables de interés, cambiando los nombres...
+
+Veamos un ejemplo:
+
+####   Ejemplo 8
+
+```{r, fig.width=10, fig.height=5}
+body = read.table("r-basic-master/data/bodyfat.txt", header = TRUE)
+boxplot(body)
+```
+
+```{r}
+boxplot(body[,7:9], names = c("Pecho", "Abdomen", "Cadera"))
+```
+
+
+Agrupar varios diagramas de caja en un solo gráfico tiene por objetivo poder compararlos visualmente, lo cual tiene sentido cuando las variables tienen significados parecidos o cuando comparamos una misma variable de poblaciones distintas.
+
+La mayoría de las veces, queremos comparar diagramas de cajas de una misma variable cuantitativa segmentada por los niveles de un factor.
+
+La sintaxis de la instrucción para dibujar en un único gráfico los diagramas de caja de una variable numérica de un data frame en función de los niveles de un factor del mismo data frame es `boxplot(var.numérica~factor, data = data frame)`
+
+####   Ejemplo 9
+
+```{r}
+boxplot(circumference~Tree, data = Orange, ylab = "Circunferencia del tronco (mm)", 
+        main = "Boxplot de los naranjos en función del tipo de árbol")
+```
+
+####   Parámetros de la función boxplot
+
+Todos los parámetros de la función `plot()` que tengan sentido pueden ser utilizados en los argumentos de la función `boxplot()`.
+
+Aparte, la función `boxplot()` dispone de algunos parámetros específicos, de los cuales mencionaremos:
+
+- `notch` igualado a `TRUE` añade una muesca en la mediana de la caja. Si se da el caso en que las muescas de dos diagramas de cajas no se solapan, entonces con alto grado de confianza, concluimos que las medianas de las poblaciones correspondientes son diferentes.
+
+####   Ejemplo 10
+
+```{r}
+boxplot(Sepal.Width~Species, data = iris, ylab = "Anchura del sétalo (cm)",
+        notch = TRUE, col = c("cyan","cyan2","cyan4"),
+        main = "Boxplot de iris")
+```
+
+<div class = "example">
+Si quisiéramos marcar de alguna forma en un diagrama de caja, cosa que puede ser muy útil en ocasiones, la media aritmética de la variable correspondiente, podríamos hacerlo mediante la función `points`:
+</div>
+
+```{r, fig.height=3.5}
+boxplot(Sepal.Width~Species, data = iris, ylab = "Anchura del sétalo (cm)")
+medias = aggregate(Sepal.Width~Species, data = iris, FUN = mean)
+points(medias, col = "pink", pch = 15)
+```
+
+
+
+<div class = "example">
+La primera instrucción del chunk anterior genera el diagrama de cajas de las anchuras de los sépalos en función de la especie. Por su parte, la segunda instrucción lo que hace es calcular las medias aritméticas de las anchuras según la especie. Finalmente, la tercera instrucción lo que hace es añadir al diagrama un punto cuadrado a cada caja en la ordenada correspondiente a su media aritmética.
+</div>
+
+
+####    La estructura interna de boxplot
+
+Como ya sabemos, podemos estudiar la función interna de algunos objetos con la función `str`.
+
+Dicha función aplicada a un boxplot, nos produce una list. Podéis ver esta list si introducís por consola la siguiente instrucción: `str(boxplot(circumference~Tree, data = Orange))` Destacaremos dos de sus componenetes aquí:
+
+- `stats` nos devuelve los valores $b_{inf},\ Q_{0.25},\ Q_{0.5},\ Q_{0.75},\ b_{sup}$
+- `out` nos retorna los valores atípicos. En caso de haber diversos diagramas en un plot, la componente `group` nos indica a qué diagramas pertenecen estos ouliers.
+
+###Datos cuantitativos agrupados
+
+
+
+Aunque no seamos completamente conscientes de ello, tendemos a agrupar datos cuantitativos constantemente. 
+
+Sin ir más lejos, calificamos de excelente a todas las notas que están sobre el 9. También decimos que una persona tiene 20 años cuando se encuentra en el intervalo [20,21). Es decir, cuando ha cumplido los 20 pero aún no tiene los 21.
+
+En estadística, existen innumerables motivos por los cuales nos interesa agrupar los datos cuando estos son cuantitativos. Uno de estos motivos puede ser perfectamente que los datos sean muy heterogéneos. En este caso, nos encontraríamos con que las frecuencias de los valores individuales serían todas muy similares, lo que daría lugar a un diagrama de barras muy difícil de interpretar, tal y como mostramos en el siguiente ejemplo.
+
+#### Ejemplo 1
+
+<div class = "example">
+**Ejemplo 1**
+
+Consideremos la siguiente muestra de 24 pesos de estudiantes:
+</div>
+
+```{r}
+pesos = c(55.2,54.0,55.2,53.7,60.2,53.2,54.6,55.1,51.2,53.2,54.8,52.3,56.9,57.0,55.0,
+          53.5,50.9,55.1,53.6,61.2,59.5,50.3,52.7,60.0)
+```
+
+<div class = "example">
+El diagrama de barras de sus frecuencias absolutas, tomando como posibles niveles todos los pesos  entre su mínimo y maximo 
+
+Como vemos, todas estas frecuencias se encuentran entre 0 y 2, cosa que no nos da mucha información.
+</div>
+
+```{r}
+barplot(table(pesos))
+```
+
+<div class = "example">
+En cambio, si dividimos todos estos posibles valores que puede tomar la variable cuantitativa en intervalos y tomamos como sus frecuencias las de todos los valores que caen en dicho intervalo, la cosa cambia. 
+
+En este caso, sería mucho más fácil interpretar los resultados, ya que estos darán mucha más información. Más adelante veremos como crear estos intervalos.
+</div>
+
+```{r, echo=FALSE}
+hist(pesos, breaks = 6, right = FALSE, main = "", ylab = "Frecuencia", xlab = "pesos")
+```
+
+Otro de los motivos por el que necesitamos muchas veces agrupar los datos cuantitativos es porque, como ya dijimos en temas anteriores, la precisión infinita no existe. 
+Por tanto, esta imposibilidad de medir de manera exacta muchas de las magnitudes continuas (tiempo, peso, altura...) nos obliga a trabajar con aproximaciones o redondeos de valores reales y que cada uno de estos represente todo un intervalo de posibles valores.
+
+
+Por lo general, existen 3 situaciones en las cuales conviene sin lugar a dudas agrupar datos cuantitativos en intervalos, también llamados <l class = "definition">clases</l>
+
+- Cuando los datos son continuos, su redondeo ya define un agrupamiento debido a la inexistencia de precisión infinita
+- Cuando los datos son discretos, pero con un número considerablemente grande de posibles valores
+- Cuando tenemos muchísimos datos y estamos interesados en estudiar las frecuencias de sus valores
+
+### Cómo agrupar datos
+
+Este proceso consta de 4 pasos:
+
+1. Decidir el número de intervalos que vamos a utilizar
+2. Decidir la amplitud de estos intervalos
+3. Acumular los extremos de los intervalos
+4. Calcular el valor representativo de cada intervalo, su <l class = "definition">marca de clase</l>
+
+No hay una forma de agrupar datos mejor que otra. Cada uno de los diferentes agrupamientos para un conjunto de datos podría sacar a la luz características diferentes del conjunto.
+
+Sí calificamos de excelente a todas las notas que están sobre el 9. También decimos que una persona tiene 20 años cuando se encuentra en el intervalo [20,21). Es decir, cuando ha cumplido los 20 pero aún no tiene los 21.
+
+En estadística, existen innumerables motivos por los cuales nos interesa agrupar los datos cuando estos son cuantitativos. Uno de estos motivos puede ser perfectamente que los datos sean muy heterogéneos. En este caso, nos encontraríamos con que las frecuencias de los valores individuales serían todas muy similares, lo que daría lugar a un diagrama de barras muy difícil de interpretar, tal y como mostramos en el siguiente ejemplo.
+
+#### Ejemplo 1
+
+<div class = "example">
+**Ejemplo 1**
+
+Consideremos la siguiente muestra de 24 pesos de estudiantes:
+</div>
+
+```{r}
+pesos = c(55.2,54.0,55.2,53.7,60.2,53.2,54.6,55.1,51.2,53.2,54.8,52.3,56.9,57.0,55.0,
+          53.5,50.9,55.1,53.6,61.2,59.5,50.3,52.7,60.0)
+```
+
+<div class = "example">
+El diagrama de barras de sus frecuencias absolutas, tomando como posibles niveles todos los pesos  entre su mínimo y máximo se muestra en la siguiente diapositiva.
+
+Como vemos, todas estas frecuencias se encuentran entre 0 y 2, cosa que no nos da mucha información.
+</div>
+
+
+```{r}
+barplot(table(pesos))
+```
+
+
+<div class = "example">
+En cambio, si dividimos todos estos posibles valores que puede tomar la variable cuantitativa en intervalos y tomámos como sus frecuencias las de todos los valores que caen en dicho intervalo, hay un cambio 
+
+En este caso, sería mucho más fácil interpretar los resultados, ya que estos darán mucha más información. Más adelante veremos como crear estos intervalos.
+</div>
+
+```{r, echo=FALSE}
+hist(pesos, breaks = 6, right = FALSE, main = "", ylab = "Frecuencia", xlab = "pesos")
+```
+
+Otro de los motivos por el que necesitamos muchas veces agrupar los datos cuantitativos es porque, como ya dijimos en temas anteriores, la precisión infinita no existe. 
+Por tanto, esta imposibilidad de medir de manera exacta muchas de las magnitudes continuas (tiempo, peso, altura...) nos obliga a trabajar con aproximaciones o redondeos de valores reales y que cada uno de estos represente todo un intervalo de posibles valores.
+
+
+Por lo general, existen 3 situaciones en las cuales conviene agrupar datos cuantitativos en intervalos, también llamados <l class = "definition">clases</l>
+
+- Cuando los datos son continuos, su redondeo ya define un agrupamiento debido a la inexistencia de precisión infinita
+- Cuando los datos son discretos, pero con un número considerablemente grande de posibles valores
+- Cuando tenemos muchísimos datos y estamos interesados en estudiar las frecuencias de sus valores
+
+
+#### La función hist()
+
+La función de `R` por excelencia para estudiar datos agrupados es `hist`. Dicha función implementa los 4 pasos del proceso.
+
+Si le indicamos como argumentos el vector de datos y el número de intervalos que deseamos, o bien el método para determinarlo (cosa que veremos a continuación), la función agrupará los datos en el número de clases que le hemos introducido, más o menos.  sin control de ningún tipo por nuestra parte sobre los intervalos que produce.
+
+Esto puede ser util en algunos casos, pero no en otros.
+
+#### Estableciendo el número de clases
+
+En este tema explicaremos una receta para agrupar datos. Lo dicho, ni mejor ni peor que el resto.
+
+Lo primero es establecer el número $k$ de clases en las que vamos a dividir nuestros datos. Podemos decidir en función de nuestros intereses o podemos hacer uso de alguna de las reglas existentes. Destacaremos las más populares. Sea $n$ el número total de datos de la muestra
+
+- <l class = "definition">Regla de la raíz cuadrada</l>: $k = \lceil\sqrt{n}\ \rceil$
+- <l class = "definition">Regla de Sturges</l>: $k = \lceil 1+\log_{2}(n)\rceil$
+
+
+- <l class = "definition">Regla de Scott</l>: Se determina primero la <l class = "definition">amplitud teórica</l>, $A_S$ de las clases $$A_S = 3.5\cdot\tilde{s}\cdot n^{-\frac{1}{3}}$$
+donde $\tilde{s}$ es la desviación típica muestral. Luego se toma $$k = \left\lceil \frac{\max(x)-\min(x)}{A_S}\right\rceil$$
+
+
+
+- <l class = "definition">Regla de Freedman-Diaconis</l>: Se determina primero la <l class = "definition">amplitud teórica</l>, $A_{FD}$ de las clases $$A_{FD} = 2\cdot(Q_{0.75}-Q_{0.25})\cdot n^{-\frac{1}{3}}$$ (donde, recordemos, $Q_{0.75}-Q_{0.25}$, es el rango intercuantílico) y entonces 
+$$k = \left\lceil \frac{\max(x)-\min(x)}{A_{FD}}\right\rceil$$
+
+Observe, las dos primeras solo dependen de $n$, mientras que las dos últimas también tienen en cuenta, de formas diferentes, la dispersión de los datos. De nuevo, no hay ninguna mejor que las demás. Pero sí puede ocurrir que métodos diferentes den lugar a la observación de características diferentes en los datos.
+
+### Estableciendo el número de clases con R
+
+Las instrucciones para llevar a cabo las 3 últimas reglas con `R` son, respectivamente,
+
+- `nclass.Sturges`
+- `nclass.scott`
+- `nclass.FD`
+
+Puede ocurrir que las difrentes reglas den valores diferentes, o no.
+
+
+#### Decidiendo la amplitud
+
+Una vez determinado $k$, hay que decidir su amplitud. 
+
+La forma más fácil y la que nosotros utilizaremos por defecto es que la amplitud de todos los intervalos sea la misma, $A$. Esta forma no es la única.
+
+Para calcular $A$, lo que haremos será dividir el rango de los datos entre $k$, el número de clases, y redondearemos por exceso a un valor de la precisión de la medida.
+
+Si se da el improbable caso en que el cociente de exacto, tomaremos como $A$ ese cociente más una unidad de precisión.
+
+#### Extremos de los intervalos
+
+Para calcular los extremos de los intervalos. Nosotros tomaremos estos intervalos siempre cerrados por su izquierda y abiertos por la derecha, debido a que esta es la forma en que `R` los construye y porque es así como se utilizan en Teoría de Probabilidades al definir la distribución de una variable aleatoria discreta y también en otras muchas situaciones cotidianas.
+
+Utilizaremos la siguiente notación
+$$[L_1,L_2),[L_2,L_3),\dots,[L_k,L_{k+1})$$
+
+donde los $L_i$ denotan los extremos de los intervalos. Estos se calculan de la siguiente forma:
+
+$$L_1 = \min(x)-\frac{1}{2}\cdot \text{precisión}$$
+
+#### Extremos de los intervalos
+
+A partir de $L_1$, el resto de intervalos se obtiene de forma recursiva:
+$$L_2 = L_1 + A$$
+$$L_3 = L_2 + A$$
+$$\vdots$$
+$$L_{k+1} = L_k+A$$
+
+Si nos fijamos bien, los extremos forman una progresión aritmética de salto $A$: $$L_{i} = L_{1}+(i-1)A,\qquad i=2,\dots,k+1$$
+
+De esta forma garantizamos que los extremos de los intervalos nunca coincidan con valores del conjunto de datos, puesto que tinen una precisión mayor.
+
+
+
+Solo nos queda determinar la <l class = "definition">marca de clase</l>, $X_i$, de cada intervalo $[L_i,L_{i+1})$.
+
+Este no es más que un valor del intervalo que utilizaremos para identificar la clase y para calcular algunos estadísticos.
+
+Generalmente, 
+$$X_i = \frac{L_i+L_{i+1}}{2}$$ 
+es decir, $X_i$ será el punto medio del intervalo, para así garantizar que el error máximo cometido al describir cualquier elemento del intervalo por medio de su marca de clase sea mínimo o igual a la mitad de la amplitud del respectivo intervalo.
+
+
+
+Es sencillo concluir que, al tener todos los intervalos amplitud $A$, la distancia entre $X_i$ y $X_{i+1}$ tambien será $A$. Por consiguiente,
+
+ $$X_{i} = X_1+ (i-1)A,\qquad i=2,\dots,k$$
+ 
+donde $$X_1 = \frac{L_1+L_2}{2}$$
+
+#### Decidiendo la amplitud
+
+Una vez determinado $k$, hay que decidir su amplitud. 
+
+La forma más fácil y la que nosotros utilizaremos por defecto es que la amplitud de todos los intervalos sea la misma, $A$. Esta forma no es la única.
+
+Para calcular $A$, lo que haremos será dividir el rango de los datos entre $k$, el número de clases, y redondearemos por exceso a un valor de la precisión de la medida.
+
+Si se da el improbable caso en que el cociente de exacto, tomaremos como $A$ ese cociente más una unidad de precisión.
+
+#### Marca de clase
+
+Solo nos queda determinar la <l class = "definition">marca de clase</l>, $X_i$, de cada intervalo $[L_i,L_{i+1})$.
+
+Este no es más que un valor del intervalo que utilizaremos para identificar la clase y para calcular algunos estadísticos.
+
+Generalmente, $$X_i = \frac{L_i+L_{i+1}}{2}$$ es decir, $X_i$ será el punto medio del intervalo, para así garantizar que el error máximo cometido al describir cualquier elemento del intervalo por medio de su marca de clase sea mínimo o igual a la mitad de la amplitud del respectivo intervalo.
+
+Es sencillo concluir que, al tener todos los intervalos amplitud $A$, la distancia entre $X_i$ y $X_{i+1}$ tambien será $A$. Por consiguiente,
+
+ $$X_{i} = X_1+ (i-1)A,\qquad i=2,\dots,k$$
+ 
+ donde $$X_1 = \frac{L_1+L_2}{2}$$
+
+
+
+#### Ejemplo 2
+
+Vamos a considerar el conjunto de datos de `datacrab`. Para nuestro estudio, trabajaremos únicamente con la variable `width`.
+
+Llevaremos a cabo los 4 pasos explicados con anterioridad: Para el cálculo del número de intervalos, determinación de la amplitud, de los extremos y las marcas de clase.
+
+#### Solución
+
+En primer lugar, cargamos los datos en un data frame:
+
+```{r}
+crabs = read.table("r-basic-master/data/datacrab.txt", header = TRUE)
+str(crabs)
+cw = crabs$width
+```
+
+A continuación, definimos la variable `cw` que contiene los datos de la variable `width`.
+
+Calculemos el número de clases según las diferentes reglas que hemos visto:
+
+- Regla de la raíz cuadrada:
+
+```{r}
+n = length(cw)
+k1 = ceiling(sqrt(n))
+k1
+```
+
+- Regla de Sturges:
+
+```{r}
+k2 = ceiling(1+log(n,2))
+k2
+```
+
+- Regla de Scott:
+
+```{r}
+As = 3.5*sd(cw)*n^(-1/3) #Amplitud teórica
+k3 = ceiling(diff(range(cw))/As)
+k3
+```
+
+- Regla de Freedman-Diaconis:
+
+```{r}
+#Amplitud teórica
+Afd = 2*(quantile(cw,0.75, names = FALSE)-quantile(cw,0.25,names = FALSE))*n^(-1/3) 
+k4 = ceiling(diff(range(cw))/Afd)
+k4
+```
+
+Podemos comprobar nuestros 3 últimos resultados con `R`:
+
+```{r}
+nclass.Sturges(cw)
+nclass.scott(cw)
+nclass.FD(cw)
+```
+
+De momento, vamos a seguir la Regla de Scott. Es decir, vamos a considerar `r nclass.scott(cw)` intervalos.
+
+
+A continuación, debemos elegir la amplitud de los intervalos.
+
+```{r}
+A = diff(range(cw)) / 10
+A
+```
+
+Como nuestros datos están expresados en mm con una precisión de una cifra decimal, debemos redondear por exceso a un cifra decimal el resultado obtenido. Por lo tanto, nuestra amplitud será de 
+
+```{r}
+A = 1.3
+```
+
+Recordemos que si el cociente nos hubiera dado un valor exacto con respecto a la precisión, tendríamos que haberle sumado una unidad de precisión.
+
+#### Solución
+
+Ahora nos toca calcular los extremos $L_1,\dots,L_{11}$ de los intervalos.
+
+Recordemos que nuestros intervalos tendrán la siguiente forma:
+
+$$[L_1,L_2),\ \dots,\ [L_{10},L_{11})$$
+Calculamos el primer extremo:
+
+```{r}
+L1 = min(cw)-1/2*0.1
+L1
+```
+
+donde 0.1 es nuestra precisión (décimas de unidad, en este caso) Y, el resto de extremos se calculan del siguiente modo:
+
+```{r}
+L2 = L1 + A
+L3 = L2 + A
+L4 = L3 + A
+L5 = L4 + A
+L6 = L5 + A
+L7 = L6 + A
+L8 = L7 + A
+L9 = L8 + A
+L10 = L9 + A
+L11 = L10 + A
+L = c(L1,L2,L3,L4,L5,L6,L7,L8,L9,L10,L11)
+L
+```
+
+
+O bien, si queremos facilitarnos el trabajo, también los podemos calcular mucho más rápido del siguiente modo:
+
+```{r}
+L = L1 + A*(0:10)
+L
+```
+
+Así, nuestros intervalos serán los siguientes:
+
+$$[20.95,22.25),\ [22.25,23.55),\ [23.55,24.85),\ [24.85,26.15),\ [26.15,27.45),$$ $$[27.45,28.75),\ [28.75,30.05),\ [30.05,31.35),\ [31.35,32.65),\ [32.65,33.95)$$
+
+Y hemos llegado al úlitmo paso: calcular las marcas de clase.
+
+Recordemos que $X_i = \frac{L_{i}+L_{i+1}}{2} \quad\forall i=1,\dots,10$
+
+Empecemos calculando $X_1$
+
+```{r}
+X1 = (L[1]+L[2])/2
+X1
+```
+
+Y, el resto de marcas de clase se calculan del siguiente modo:
+
+```{r}
+X2 = X1 + A
+X3 = X2 + A
+X4 = X3 + A
+X5 = X4 + A
+X6 = X5 + A
+X7 = X6 + A
+X8 = X7 + A
+X9 = X8 + A
+X10 = X9 + A
+X = c(X1,X2,X3,X4,X5,X6,X7,X8,X9,X10)
+X
+```
+
+
+O bien, si queremos facilitarnos el trabajo, también los podemos calcular mucho más rápido como sucesión:
+
+```{r}
+X = X1 + A*(0:9)
+X
+```
+
+o también, como punto medio del intervalo
+
+```{r}
+X = (L[1:length(L)-1]+L[2:length(L)])/2
+X
+```
+
+#### Ejercicio{.exercise}
+
+Repetir este proceso para el número de clases obtenido con 
+
+- la regla de la raíz 
+- la regla de Sturges 
+- la regla de Freedman-Diaconis
+
+
+
+### Agrupando los datos con R
+
+Al agrupar los datos, lo que hacemos es convertir nuestra variable cuantitativa en un factor cuyos niveles son las clases en que ha sido dividida e identificamos cada dato con su clase.
+
+Cuando etiquetamos los niveles, podemos elegir 3 codificaciones:
+
+- Los intervalos
+- Las marcas de clase (el punto medio de cada intervalo)
+- El número de orden de cada intervalo
+
+#### La función cut
+
+Esta función es la básica en `R` para agrupar un vector de datos numéricos y codificar sus valores con clases a las que pertenecen.
+
+Su sintaxis básica es
+
+<div class = "aligncenter">`cut(x, breaks=..., labels=..., right=...)`
+</div>
+
+- `x` es el vector numérico, nuestra variable cuantitativa
+- `breaks` puede ser un vector numérico formado por los extremos de los intervalos en los que queremos agrupar nuestros datos y que habremos calculado previamente. También puede ser un número $k$, en cuyo caso `R` agrupa los datos en $k$ clases. Para este caso, `R` divide el intervalo comprendido entre los valores mínimo y máximo de $x$ en $k$ intervalos y, a continuación, desplaza ligeramente el extremo inferior del primer intervalo a la izquierda y el extremo del último, a la derecha.
+- `labels` es un vector con las etiquetas de los intervalos. Su valor por defecto es utilizar la etiqueta de los mismos intervalos. Si especificamos `labels = FALSE`, obtendremos los intervalos etiquetados por medio de los números naturales correlativos, empezando por 1. Para utilizar como etiqueta las marcas de clase o cualquier otra codificación, hay que entrarlo como valor de este parámetro.
+- `right` es un parámetro que igualado a `FALSE` hace que los intervalos que consideremos sean cerrados por la izquierda y abiertos por la derecha. Este no es su valor por defecto.
+- `include.lowest` igualdo a `TRUE` combinado con `right = FALSE` hace que el último intervalo sea cerrado. Puede ser útil en algunos casos.
+
+
+En cualquier caso, el resultado de la función `cut` es una lista con los elementos del vector original codificados con las etiquetas de las clases a las que pertenecen. Bien puede ser un factor o un vector.
+
+
+```{r}
+petals = iris$Petal.Length
+cut(petals, breaks=5)
+```
+
+```{r}
+cut(petals, breaks=ceiling(sqrt(length(petals))), right=FALSE)
+
+```
+
+```{r}
+cut(petals, breaks=c(1,2,3,4,5,6,7), right=FALSE)
+```
+
+### Frecuencias
+
+Una primera consideración es tratar las clases obtenidas como los niveles de una variable ordinal y calcular sus frecuencias.
+
+- La frecuencia absoluta de una clase será el número de datos originales que pertenecen a la clase
+- La frecuencia absoluta acumulada de una clase será el número de datos que pertenecen a dicha clase o alguna de las anteriores
+
+### Tabla de frecuencias
+
+Normalmente, las frecuencias de un conjunto de datos agrupados se suele representar de la siguiente forma
+
+| Intervalos | $X_j$ | $n_j$ | $N_j$ | $f_j$ | $F_j$ |  
+|-------------------|--------------------|--------------------|--------------------|--------------------|--------------------|
+|$[L_1,L_2)$|$X_1$|$n_1$|$N_1$|$f_1$|$F_1$|
+|$[L_2,L_3)$|$X_2$|$n_2$|$N_2$|$f_2$|$F_2$|
+|$\vdots$|$\vdots$|$\vdots$|$\vdots$|$\vdots$|$\vdots$|
+|$[L_k,L_{k+1})$|$X_k$|$n_k$|$N_k$|$f_k$|$F_k$|
+
+
+El cálculo de las frecuencias con `R` podemos hacerlo mediante las funciones `table`, `prop.table` y `cumsum`.
+
+También podemos utilizar la función `hist`, que internamente genera una lista cuya componente `count` es el vector de frecuencias absolutas de las clases. Por consiguiente, para calcular estas frecuencias, podemos utilizar la sintaxis
+
+<div class = "aligncenter">`hist(x, breaks=..., right=FALSE, plot=FALSE)$count`
+</div>
+
+
+Conviene igualar el parámetro `breaks` al vector de los extremos del intervalo debido a que `cut` y `hist` hacen uso de diferentes métodos para agrupar los datos cuando se especifica solamente el número $k$ de clases.
+
+El resultado de `hist` incluye la componente `mids` que contiene el vector de puntos medios de los intervalos, es decir, nuestras marcas de clase.
+
+### Tabla de frecuencias con R
+
+Podemos automatizar el cálculo de la ya tan mencionada tabla de frecuencias, utilizando las dos funciones que mostramos a continuación. 
+
+La primera sirve en el caso en que vayamos a tomar todas las clases de la misma amplitud. Sus parámetros son: $x$, el vector con los datos cuantitativos; $k$, el número de clases; $A$, su amplitud; y $p$, la precisión de los datos $(p = 1$ si la precisión son unidades, $p = 0.1$ si la precisión son décimas de unidad...).
+
+Por su parte, la segunda es para cuando conocemos los extremos de las clases. Sus parámetros son: $x$, el vector con los datos cuantitativos; $L$, el vector de extremos de clases; y $V$ , un valor lógico, que ha de ser `TRUE` si queremos que el último intervalo sea cerrado, y `FALSE` en caso contrario.
+
+
+
+```{r}
+#Primera función
+TablaFrecs = function(x,k,A,p){ 
+  L = min(x)-p/2+A*(0:k)
+  x_cut = cut(x, breaks = L, right=FALSE)
+  intervals = levels(x_cut)
+  mc = (L[1]+L[2])/2+A*(0:(k-1))
+  Fr.abs = as.vector(table(x_cut)) 
+  Fr.rel = round(Fr.abs/length(x),4) 
+  Fr.cum.abs = cumsum(Fr.abs) 
+  Fr.cum.rel = cumsum(Fr.rel)
+  tabla = data.frame(intervals, mc, Fr.abs, Fr.cum.abs, Fr.rel, Fr.cum.rel)
+  tabla
+  }
+```
+
+
+
+```{r}
+TablaFrecs.L = function(x,L,V){
+  x_cut = cut(x, breaks=L, right=FALSE, include.lowest=V)
+  intervals = levels(x_cut)
+  mc = (L[1:(length(L)-1)]+L[2:length(L)])/2
+  Fr.abs = as.vector(table(x_cut)) 
+  Fr.rel = round(Fr.abs/length(x),4)
+  Fr.cum.abs = cumsum(Fr.abs)
+  Fr.cum.rel = cumsum(Fr.rel)
+  tabla = data.frame(intervals, mc, Fr.abs, Fr.cum.abs, Fr.rel, Fr.cum.rel)
+  tabla
+  }
+```
+
+#### Ejemplo 2 
+
+
+**Ejemplo 2**
+
+Siguiendo con el ejemplo de las anchuras de los cangrejos, vamos a calcular sus tablas de frecuencias haciendo uso de todo lo aprendido anteriormente.
+
+#### Solución
+
+La tabla queda del siguiente modo:
+
+```{r, echo = FALSE}
+n = c(length(which(cw>=L[1] & cw<L[2])),length(which(cw>=L[2] & cw<L[3])),length(which(cw>=L[3] & cw<L[4])),length(which(cw>=L[4] & cw<L[5])),length(which(cw>=L[5] & cw<L[6])),length(which(cw>=L[6] & cw<L[7])),length(which(cw>=L[7] & cw<L[8])),length(which(cw>=L[8] & cw<L[9])),length(which(cw>=L[9] & cw<L[10])),length(which(cw>=L[10] & cw<L[11])))
+N = cumsum(n)
+f = round(n/N[10],4)
+FF = cumsum(f)
+```
+
+| Intervalos | $X_j$ | $n_j$ | $N_j$ | $f_j$ | $F_j$ |  
+|-------------------|--------------------|--------------------|--------------------|--------------------|--------------------|
+|[`r L[1]`, `r L[2]`)|`r X[1]`|`r n[1]`|`r N[1]`|`r f[1]`|`r FF[1]`|
+|[`r L[2]`, `r L[3]`)|`r X[2]`|`r n[2]`|`r N[2]`|`r f[2]`|`r FF[2]`|
+|[`r L[3]`, `r L[4]`)|`r X[3]`|`r n[3]`|`r N[3]`|`r f[3]`|`r FF[3]`|
+|[`r L[4]`, `r L[5]`)|`r X[4]`|`r n[4]`|`r N[4]`|`r f[4]`|`r FF[4]`|
+[`r L[5]`, `r L[6]`)|`r X[5]`|`r n[5]`|`r N[5]`|`r f[5]`|`r FF[5]`|
+|[`r L[6]`, `r L[7]`)|`r X[6]`|`r n[6]`|`r N[6]`|`r f[6]`|`r FF[6]`|
+
+
+
+| Intervalos | $X_j$ | $n_j$ | $N_j$ | $f_j$ | $F_j$ |  
+|-------------------|--------------------|--------------------|--------------------|--------------------|--------------------|
+|[`r L[7]`, `r L[8]`)|`r X[7]`|`r n[7]`|`r N[7]`|`r f[7]`|`r FF[7]`|
+|[`r L[8]`, `r L[9]`)|`r X[8]`|`r n[8]`|`r N[8]`|`r f[8]`|`r FF[8]`|
+|[`r L[9]`, `r L[10]`)|`r X[9]`|`r n[9]`|`r N[9]`|`r f[9]`|`r FF[9]`|
+|[`r L[10]`, `r L[11]`)|`r X[10]`|`r n[10]`|`r N[10]`|`r f[10]`|`r FF[10]`|
+
+
+Y, ahora, lo haremos con las funciones que hemos proporcionado:
+
+```{r}
+TablaFrecs(cw,10,1.3,0.1)
+```
+
+
+```{r}
+TablaFrecs.L(cw,L,FALSE)
+```
+
+Veamos que los intervalos no terminan de ser los que hemos calculado nosotros, pero eso se debe a como funciona la función `cut`.
+
+
+
+
+#### Ejemplo 3
+
+#### Enunciado{.example}
+
+**Ejemplo 3**
+
+Se han recogido las notas de un examen de historia a los 100 alumnos de primero de bachillerato de un instituto.
+
+Vamos a hacer uso de todo lo aprendido para obtener la mayor información posible utilizando las funciones `cut` e `hist` y también, las proporcionadas por nosotros.
+
+Los resultados obtenidos en la encuesta han sido:
+
+```{r, echo = FALSE}
+set.seed(4)
+notas = sample(0:10,100, replace = TRUE)
+set.seed(NULL)
+```
+
+```{r}
+notas
+```
+
+Vamos a agrupar las notas en los siguientes intervalos:
+
+$$[0,5),\ [5,7),\ [7,9),\ [9,10]$$
+
+Claramente, estos 4 intervalos no tienen la misma amplitud.
+
+Fijémonos también en que el último intervalo está cerrado por la derecha.
+
+
+```{r}
+#Definimos vector de extremos
+L = c(0,5,7,9,10)
+#Definimos notas1 como el resultado de la codificación en intervalos utilizando como 
+#etiquetas los propios intervalos
+notas1 = cut(notas, breaks = L, right = FALSE, include.lowest = TRUE)
+## break sob los intervalos
+## right no se cierra por la derecha 
+## include.lowest = TRUE Se incluye el mas bajo de los numeros Asi queda cerrado por la  izquierda
+## 
+notas1 ## se representa en factor de 4 niveles
+```
+
+
+```{r}
+#Definimos las marcas de clase
+MC = (L[1:length(L)-1]+L[2:length(L)])/2
+#Definimos notas2 como el resultado de la codificación en intervalos utilizando como 
+#etiquetas las marcas de clase
+notas2 = cut(notas, breaks = L, labels = MC, right = FALSE, include.lowest = TRUE)
+notas2 ## salen las marcas de clase
+```
+
+
+```{r}
+#Definimos notas3 como el resultado de la codificación en intervalos utilizando como 
+#etiquetas la posición ordenada del intervalo (1, 2, 3 o 4)
+notas3 = cut(notas, breaks = L, labels = FALSE, right = FALSE, include.lowest = TRUE)
+notas3 ## Se representa con un xaracter ordinal es la posicion del intervalo que esta la nota  
+``` 
+
+
+
+```{r}
+#Definimos notas4 como el resultado de la codificación en intervalos utilizando como 
+#etiquetas Susp, Aprob, Not y Exc
+notas4 = cut(notas, breaks = L, labels = c("Susp", "Aprob", "Not", "Exc"), right = FALSE, include.lowest = TRUE)
+notas4
+```
+
+El resultado de `cut` ha sido, en cada caso, una lista con los elementos del vector original codificados con las etiquetas de las clases a las que pertenecen. 
+
+Las dos primeras aplicaciones de la función `cut` han producido factores (cuyos niveles son los intervalos y las marcas de clase, respectivamente, en ambos casos ordenados de manera natural), mientras que aplicándole `labels = FALSE` hemos obtenido un vector.
+
+¿Qué habría ocurrido si le hubiéramos pedido a R que cortase los datos en 4 intervalos?
+
+Pues en este caso no nos hubiera servido de mucho, sobre todo porque la amplitud de nuestros intervalos era, desde buen inicio, diferente.
+
+```{r}
+cut(notas, breaks = 4, right = FALSE, include.lowest = TRUE)
+```
+
+`R` ha repartido los datos en 4 intervalos de longitud 2.5, y ha desplazado ligeramente a la izquierda el extremo izquierdo del primer intervalo. 
+
+Trabajaremos ahora con `notas4` y calcularemos sus frecuencias:
+
+```{r}
+table(notas4) #Fr. Abs
+prop.table(table(notas4)) #Fr. Rel
+```
+
+
+```{r}
+cumsum(table(notas4)) #Fr. Abs. Cum
+cumsum(prop.table(table(notas4))) #Fr. Rel. Cum
+```
+
+Podríamos haber obtenido todo lo anterior haciendo uso de la función `hist`.
+
+```{r}
+notasHist = hist(notas, breaks = L, right = FALSE, include.lowest = TRUE, plot = FALSE)
+FAbs = notasHist$count
+FRel = prop.table(FAbs)
+FAbsCum = cumsum(FAbs)
+FRelCum = cumsum(FRel)
+```
+Podemos crear un data frame con todas estas frecuencias:
+
+```{r}
+intervalos = c("[0,5)","[5,7)","[7,9)","[9,10]")
+calificacion = c("Suspenso", "Aprobado", "Notable", "Excelente")
+marcas = notasHist$mids
+tabla.Fr = data.frame(intervalos,calificacion,marcas,FAbs,FAbsCum,FRel,FRelCum)
+tabla.Fr
+```
+
+
+O bien, podríamos haber utilizado las funciones que  hemos proporcionado:
+
+```{r}
+TablaFrecs.L(notas, L, TRUE)
+```
+
+
+Al tener una muestra de datos numéricos, conviene calcular los <l class = "definition"> estadísticos </l> antes de realizar los agrupamientos, puesto que de lo contrario podemos perder información.
+
+Hay situaciones en que los datos los obtenemos ya agrupados. En estos casos, aún sigue siendo posible calcular los estadísticos y utilizarlos como aproximaciones de los estadísticos de los datos "reales", los cuales no conocemos.
+
+La media $\bar{x}$, la varianza, $s^2$, la varianza muestral, $\tilde{s}^2$, la desviación típica, $s$, y la desviación típica muestral, $\tilde{s}$ de un conjunto de datos agrupados se calculan mediante las mismas fórmulas que para los datos no agrupados con la única diferencia de que sustituimos cada clase por su marca de clase y la contamos con su frecuencia.
+
+Es decir, si tenemos $k$ clases, con sus respectivas marcas $X_1,\dots,X_k$ con frecuencias absolutas $n_1,\dots,n_k$ de forma que $n=\sum_{j=1}^kn_j$. Entonces
+
+$$\bar{x}=\frac{\sum_{j=1}^kn_jX_j}{n},\quad s^2=\frac{\sum_{j=1}^kn_jX_j^2}{n}-\bar{x}^2,\quad \tilde{s}^2=\frac{n}{n-1}\cdot s^2$$ $$s=\sqrt{s^2},\quad \tilde{s}=\sqrt{\tilde{s}^2}$$
+
+#### Intervalo modal
+
+En lo referente a la moda, esta se sustituye por el <l class = "definition">intervalo modal</l>, que es la clase con mayor frecuencia (absoluta o relativa).
+
+En el caso en que un valor numérico fuera necesario, se tomaría su marca de clase.
+
+#### Intervalo crítico para la mediana
+
+Se conoce como <l class = "definition">intervalo crítico para la mediana</l>, $[L_c,L_{c+1})$, al primer intervalo donde la frecuencia relativa acumulada sea mayor o igual que 0.5
+
+Denotemos por $n_c$ su frecuencia absoluta, por $A_c = L_{c+1}-L_c$ su amplitud y por $N_{c-1}$ la frecuencia acumalada del intervalo inmediantamente anterior (en caso de ser $[L_c,L_{c+1})=[L_1,L_2)$, entonces $N_{c-1}=0$). Y por lo tanto, $M$ será una aproximación para la mediana de los datos "reales" a partir de los agrupados
+
+$$M = L_c +A_c\cdot\frac{\frac{n}{2}-N_{c-1}}{n_c}$$
+
+### Aproximación de los cuantiles
+
+La fórmula anterior nos permite aproximar el cuantil $Q_p$ de los datos "reales" a partir de los datos agrupados:
+
+$$Q_p = L_p +A_p\cdot\frac{p\cdot n-N_{p-1}}{n_p}$$
+
+donde el intervalo $[L_p,L_{p+1})$ denota el primer intervalo cuya frecuencia relativa acumulada es mayor o igual a $p$
+
+####Ejemplo 2 
+
+Vamos a seguir trabajando con nuestra variable `cw`, esta vez, lo que haremos será calcular los estadísticos de la variable con los datos agrupados y,  estimaremos la mediana y algunos cuantiles.
+
+#### Solución
+
+Recordemos todo lo que habíamos obtenido sobre nuestra variable `cw`:
+
+```{r, echo = FALSE}
+L = c(L1,L2,L3,L4,L5,L6,L7,L8,L9,L10,L11)
+L
+intervals = as.character(c("[20.95,22.25)","[22.25,23.55)","[23.55,24.85)","[24.85,26.15)","[26.15,27.45)","[27.45,28.75)","[28.75,30.05)","[30.05,31.35)","[31.35,32.65)","[32.65,33.95)"))
+TF.L = function(x,L,V){
+  x_cut = cut(x, breaks=L, right=FALSE, include.lowest=V)
+  mc = (L[1:(length(L)-1)]+L[2:length(L)])/2
+  Fr.abs = as.vector(table(x_cut)) 
+  Fr.rel = round(Fr.abs/length(x),4)
+  Fr.cum.abs = cumsum(Fr.abs)
+  Fr.cum.rel = cumsum(Fr.rel)
+  tabla = data.frame(intervals, mc, Fr.abs, Fr.cum.abs, Fr.rel, Fr.cum.rel)
+  tabla
+  }
+tabla = TF.L(cw,L,FALSE)
+tabla
+```
+
+
+Ahora ya podemos calcular los estadísticos:
+
+```{r}
+TOT = tabla$Fr.cum.abs[10] ## accedo a la ultima fila de la tabla anterior 
+TOT
+anchura.media = round(sum(tabla$Fr.abs*tabla$mc)/TOT,3)
+anchura.media #Media
+anchura.var = round(sum(tabla$Fr.abs*tabla$mc^2)/TOT-anchura.media^2,3)
+anchura.var #Varianza
+```
+
+
+```{r}
+anchura.dt = round(sqrt(anchura.var),3)
+anchura.dt #Desviación típica
+I.modal = tabla$intervals[which(tabla$Fr.abs == max(tabla$Fr.abs))]
+I.modal #Intervalo modal
+```
+
+Por lo tanto, con los datos de los que disponemos, podemos afirmar que la anchura media de los cangrejos de la muestra es de `r anchura.media`mm, con una desviación típica de unos `r anchura.var`mm, y que el grupo de anchuras más numeroso era el de `r I.modal`.
+
+calculemos el intervalo crítico para la mediana.
+
+```{r}
+I.critic = tabla$intervals[which(tabla$Fr.cum.rel >= 0.5)]
+I.critic[1] #Intervalo critic
+```
+
+Ahora, ya podemos calcular una estimación de la mediana de los datos "reales".
+
+```{r}
+n = TOT
+Lc = L[4]
+Lc.pos = L[5]
+Ac = L[5]-L[4]
+Nc.ant = tabla$Fr.cum.abs[3]
+nc = tabla$Fr.abs[4]
+M = Lc+Ac*((n/2)-Nc.ant)/nc
+M #Aproximación de la mediana de los datos "reales"
+median(cw) #Mediana de los datos "reales"
+```
+
+También podemos hacer aproximaciones de los cuantiles. Hemos creado una función `aprox.quantile.p` para no tener que copiar la operación cada vez que queramos calcular un cuantil aproximado.
+
+```{r}
+aprox.quantile.p = function(Lcrit,Acrit,n,p,Ncrit.ant,ncrit){
+  round(Lcrit+Acrit*(p*n-Ncrit.ant)/ncrit,3)
+}
+aprox.quantile.p(Lc,Ac,n,0.25,Nc.ant,nc) #Primer cuartil
+aprox.quantile.p(Lc,Ac,n,0.75,Nc.ant,nc) #Tercer cuartil
+```
+
+Y ahora, calculemos los cuartiles de los datos "reales"
+
+```{r}
+quantile(cw,0.25)
+quantile(cw,0.75)
+```
+
+
+### Histogramas
+
+La mejor manera de representar datos agrupados es mediante unos diagramas de barras especiales conocidos como <l class = "definition">histogramas</l>.
+
+En ellos se dibuja sobre cada clase una barra cuya área representa su frecuencia. se puede comprobar que el producto de la base por la altura de cada barra es igual a la frecuencia de la clase correspondiente.
+
+Si todas las clases tienen la misma amplitud, las alturas de estas barras son proporcionales a las frecuencias de sus clases, con lo cual podemos marcar sin ningún problema las frecuencias sobre el eje vertical. Pero si las amplitudes de las clases no son iguales, las alturas de las barras en un histograma no representan correctamente las frecuencias de las clases.
+
+En este último caso, las alturas de las barras son las necesarias para que el área de cada barra sea igual a la frecuencia de la clase correspondiente y como las bases son de amplitudes diferentes, estas alturas no son proporcionales a las frecuencias de las clases, por lo que no tiene sentido marcar las frecuencias en el eje vertical
+
+Los histogramas también son utilizados para representar frecuencias acumuladas de datos agrupados. En este caso, las alturas representan las frecuencias independientemente de la base debido a que éstas deben ir creciendo.
+
+El eje de las abcisas representa los datos. Aquí marcamos los extremos de las clases y se dibuja una barra sobre cada una de ellas. Esta barra tiene significados diferentes en función del tipo de histograma, pero en general representa la frecuencia de su clase
+
+- Histograma de frecuencias absolutas: la altura de cada barra es la necesaria para que el área de la barra sea igual a la frecuencia absoluta de la clase. Las amplitudes de las clases pueden ser todas iguales o no. En el primer caso, las alturas son proporcionales a las frecuencias. En el segundo caso, no existe tal proporcionalidad. De todas formas, sea cual sea el caso, conviene indicar de alguna forma la frecuencia que representa cada barra.
+
+
+```{r, echo = FALSE}
+par(mfrow = c(1,2))
+hist(cw, breaks = L, right = FALSE, main = "Histograma con intervalos \n de misma anchura",xlab = "")
+Lnotas = c(0,5,7,9,10)
+hist(notas, breaks = Lnotas, right = FALSE, include.lowest = TRUE, main = "Histograma con intervalos \n de diferente anchura", xlab = "")
+par(mfrow = c(1,1))
+```
+
+    
+#### Interpretación de los histogramas
+
+- Histograma de frecuencias relativas: la altura, <l class = "definition">densidad</l>, de cada barra es la necesaria para que el área sea igual a la frecuencia relativa de la clase. La suma de todas las áreas debe ser 1. De nuevo, conviene indicar de alguna forma la frecuencia que representa cada barra.
+- Histogramas de frecuencias acumuladas: las alturas de las barras son iguales a las frecuencias acumuladas de las clases, independientemente de su amplitud.
+
+#### Frecuencias nulas
+
+No es conveniente que en un histograma aparezcan clases con frecuencia nula, exceptuando el caso en que represente poblaciones muy diferentes y separadas sin individuos intermedios.
+
+Si apareciesen clases vacías, convendría utilizar un número menor de clases, o bien unir las clases vacías con alguna de sus adyacentes. De este último modo romperíamos nuestro modo de trabajar con clases de la misma amplitud.
+
+### Dibujando histogramas con R
+
+Lo hacemos con la función `hist`, la cual ya conocemos. Su sintaxis es
+
+<div class = "aligncenter">`hist(x, breaks=..., freq=..., right=..., ...)`
+</div>
+
+- `x`: vector de los datos
+- `breaks`: vector con los extremos de los intervalos o el número $k$ de intervalos. Incluso podemos indicar, entre comillas, el método que deseemos para calcular el número de clases: `"Scott"`, `"Sturges"`... Eso sí, para cualquiera de las dos últimas opciones, no siempre obtendréis el número deseado de intervalos, puesto que R lo considerará solo como sugerencia. Además, recordad que el método para calcular los intervalos es diferente al de la función `cut`. Por tanto, se recomienda hacer uso de la primera opción.
+- `freq=TRUE`, que es su valor por defecto, produce el histograma de frecuencias absolutas si los intervalos son todos de la misma amplitud y de frecuencias relativas en caso contrario. `freq=FALSE` nos produce siempre el de frecuencias relativas.
+- `right` funciona exactamente igual que en la función `cut`.
+- `include.lowest = TRUE` también funciona exactamente igual que en la función `cut`.
+- También podéis utilizar los parámetros de la función `plot` que tengan sentido
+
+`hist` titula por defecto los histogramas del siguiente modo: "Histogram of" seguido del nombre del vector de datos. No suele quedar muy bien si no estamos haciendo nuestro análisis en inglés.
+
+
+Recordemos que el parámetro `plot` igualado a `FALSE` no dibujaba, pero sí calculaba el histograma.
+
+La función `hist` contiene mucha información en su estructura interna
+
+- `breaks` contiene el vector de extremos de los intervalos: $L_1,\dots,L_{k+1}$
+- `mids` contiene los puntos medios de los intervalos, lo que nosotros consideramos las marcas de clase: $X_1,\dots,X_k$
+- `counts` contiene el vector de frecuencias absolutas de los intervalos: $n_1,\dots,n_k$
+- `density` contiene el vector de las densidades de los intervalos. Estas se corresponden con las alturas de las barras del histograma de frecuencias relativas. Recordemos, la densidad de un intervalo es su frecuencia relativa divida por su amplitud.
+
+
+La siguiente función es útil para calcular histogramas de frecuencias absolutas más completas:
+
+```{r}
+histAbs = function(x,L) {
+  h = hist(x, breaks = L, right = FALSE, freq = FALSE,
+           xaxt = "n", yaxt = "n", col = "lightgray", 
+           main = "Histograma de frecuencias absolutas", 
+           xlab = "Intervalos y marcas de clase",ylab = "Frecuencias absolutas")
+  axis(1, at=L)
+  text(h$mids, h$density/2, labels=h$counts, col="purple") 
+  }
+```
+
+- `xaxt="n"` e `yaxt="n"` especifican que, por ahora, la función no dibuje los ejes de abcisas y ordenadas, respectivamente.
+
+
+
+
+
+
+## Regresión Lineal
+### Introducción
+Supongamos que tenemos una serie de puntos en el plano cartesiano $\mathbb{R}^2$, de la forma
+$$(x_1,y_1),\ \dots,\ (x_n,y_n)$$
+que representan las observaciones de dos variables numéricas. Digamos que $x$ es la edad e $y$ el peso de $n$ estudiantes.
+
+
+Nuestro objetivo: describir la relación entre la <l class = "definition">variable independiente</l>, $x$, y la <l class = "definition">variable dependiente</l>, $y$, a partir de estas observaciones.
+
+Para ello, lo que haremos será buscar una función $y=f(x)$ cuya gráfica se aproxime lo máximo posible a nuestros pares ordenados $(x_i,y_i)_{i=1,\dots,n}$.
+
+Esta función nos dará un modelo matemático de cómo se comportan estas observaciones, lo cual nos permitirá entender mejor los mecanismos que relacionan las variables estudiadas o incluso, nos dará la oportunidad de hacer prediccciones sobre futuras observaciones.
+
+La primera opción es la más fácil. Consiste en estudiar si los puntos $(x_i,y_i)_{i=1,\dots,n}$ satisfacen una relación lineal de la forma
+$$y = ax +b$$
+con $a,b\in\mathbb{R}$.
+
+En este caso, se busca la recta $y = ax +b$ que mejor aproxime los puntos dados imponiendo que la suma de los cuadrados de las diferencias entre los valores $y_i$ y sus aproximaciones $\tilde{y}_i=ax_i+b$ sea mínima. Es decir, que
+$$\sum_{i=1}^n(y_i-\tilde{y}_i)^2$$ sea mínima
+
+
+El objetivo de este tema no es otro más que como en R  obtiene esta recta de regresión.
+
+Veremos también cómo se puede evaluar numéricamente si esta recta se ajusta bien a las observaciones dadas.
+
+Para ello, introduciremos algunas funciones de R y haremos uso de transformaciones logarítmicas para tratar casos en los que los puntos dados se aproximen mejor mediante una función exponencial o potencial.
+
+### Calculando rectas de regresión
+
+Por lo general, cuando tenemos una serie de observaciones en parejas, $(x_i,y_i)_{i=1,\dots,n}$, la forma natural de almacenarlas en R es mediante una tabla de datos. Y la que más conocemos nostros es el data frame.
+
+#### Ejemplo 1
+
+<div class = "example">
+**Ejemplo 1**
+
+En este ejemplo, nosotros haremos uso del siguiente data frame:
+</div>
+
+```{r}
+body = read.table("r-basic-master/data/bodyfat.txt", header = TRUE)
+head(body,3)
+```
+
+<div class = "example">
+Más concretamente, trabajaremos con las variables `fat` y `weight`.
+</div>
+
+```{r}
+body2 = body[,c(2,4)]#nuevo data con columns peso y grasa
+names(body2) = c("Grasa","Peso")  ##nobramos
+str(body2)
+head(body2,3)
+```
+
+### Representación gráfica
+
+Al analizar datos, siempre es recomendable empezar con una representación gráfica que nos permita hacernos a la idea de lo que tenemos.
+
+Esto se consigue haciendo uso de la función `plot`, que ya hemos estudiado en detalle en lecciones anteriores. No obstante, para lo que necesitamos en este tema nos conformamos con un gráfico básico de estos puntos que nos muestre su distribución.
+
+
+```{r}
+plot(body2)
+```
+
+
+Para calcular la <l class = "definition">recta de regresión</l> con R de la familia de puntos $(x_i,y_i)_{i=1,\dots,n}$, si `x` es el vector $(x_i)_{i=1,\dots,n}$ e `y` es el vector $(y_i)_{i=1,\dots,n}$, entonces, su recta de regresión se calcula mediante la instrucción
+
+<div class = "aligncenter">
+`lm(y~x)`
+</div>
+
+Cuidado con la sintaxis: primero va el vector de las variables dependientes y, seguidamente después de una tilde `~`, va el vector de las variables independientes.
+
+Esto se debe a que R toma el significado de la tilde como "en función de". Es decir, la interpretación de `lm(y~x)` en R es "la recta de regresión de $y$ en función de $x$".
+
+Si los vectores `y` y `x` son, en este orden, la primera y la segunda columna de un data frame de dos variables, entonces es suficiente aplicar la función `lm` al data frame. 
+
+En general, si `x` e `y` son dos variables de un data frame, para calcular la recta de regresión de `y` en función de `x` podemos usar la instrucción
+
+<div class = "aligncenter">
+`lm(y~x, data = data fame)`
+</div>
+
+#### Ejemplo 1
+
+```{r}
+lm(body2$Peso~body2$Grasa) #Opción 1
+lm(Peso~Grasa, data = body2) #Opción 2
+```
+
+<div class = "example">
+observemos, las dos formas de llamar a la función dan exactamente lo mismo. Ninguna es mejor que la otra.
+
+El resultado obtenido en ambos casos significa que la recta de regresión para nuestros datos es 
+$$y = 2.151x+137.738$$
+
+Ahora, podemos superponer esta recta a nuestro gráfico anterior haciendo uso de la función `abline()`.
+</div>
+
+```{r}
+plot(body2)
+abline(lm(Peso~Grasa, data = body2), col = "purple")
+```
+
+#### Observación
+
+Hay que tener en cuenta que el análisis llevado a cabo hasta el momento de los pares de valores $(x_i,y_i)_{i=1,\dots,n}$ ha sido puramente descriptivo.
+
+Es decir, hemos mostrado que estos datos son consistentes con una función lineal, pero no hemos demostrado que la variable dependiente sea función aproximadamente lineal de la variable dependiente. Esto último necesitaría una demostración matemática, o bien un argumento biológico, pero no basta con una simple comprobación numérica.
+
+### Haciendo predicciones
+
+Eso sí, podemos utilizar todo lo hecho hasta ahora para predecir valores $\tilde{y}_i$ en función de los $x_i$  resolviendo una simple ecuación lineal
+
+
+### Coeficiente de determinación
+
+El <l class = "definition">coeficiente de determinación</l>, $R^2$, nos es útil para evaluar numéricamente si la relación lineal obtenida es significativa o no.
+
+No explicaremos de momento como se define. Eso lo dejamos para curiosidad del usuario. Por el momento, es suficiente con saber que este coeficiente se encuentra en el intervalo $[0,1]$. Si $R^2$ es mayor a 0.9, consideraremos que el ajuste es bueno. De lo contrario, no.
+
+### La función summary
+
+La función `summary` aplicada a `lm` nos muestra los contenidos de este objeto. Entre ellos encontramos `Multiple R-squared`, que no es ni más ni menos que el coeficiente de determinación, $R^2$.
+
+Para facilitarnos las cosas y ahorrarnos información que, de momento, no nos resulta de interés, podemos aplicar `summary(lm(...))$r.squared`
+
+#### Ejemplo 1
+
+```{r}
+summary(lm(Peso~Grasa, data = body2))
+```
+
+
+```{r}
+summary(lm(Peso~Grasa, data = body2))$r.squared
+```
+
+<div class = "example">
+En este caso, hemos obtenido un coeficiente de determinación de 0.3751, cosa que confirma que la recta de regresión no aproxima nada bien nuestros datos. 
+</div>
+
+### Rectas de regresión y transformaciones logarítmicas
+
+No siempre encontraremos dependencias lineales. A veces nos encontraremos otro tipo de dependencias, como por ejemplo pontencias o exponenciales.
+
+Estas se pueden transformar a lineales mediante un <l class = "definition">cambio de escala</l>
+
+### Escalas logarítmicas
+
+Por lo general, es habitual encontrarnos gráficos con sus ejes en <l class = "definition">escala lineal</l>. Es decir, las marcas en los ejes están igualmente espaciadas.
+
+A veces, es conveniente dibujar alguno de los ejes en <l class = "definition">escala logarítmica</l>, de modo que la misma distancia entre las marcas significa el mismo cociente entre sus valores. En otras palabras, un eje en escala logarítmica representa el [logaritmo](https://es.wikipedia.org/wiki/Logaritmo) de sus valores en escala lineal.
+
+Diremos que un gráfico está en <l class = "definition">escala semilogarítmica</l> cuando su eje de abcisas está en escala lineal y, el de ordenadas, en escala logarítmica.
+
+Diremos que un gráfico está en <l class = "definition">escala doble logarítmica</l> cuando ambos ejes están en escala logarítmica.
+
+### Interpretación gráfica
+
+Si al representar unos puntos $(x_i, y_i)_{i=1,\dots,n}$ en escala semilogarítmica observamos que siguen aproximadamente una recta, esto querrá decir que los valores $\log(y)$ siguen una ley aproximadamente lineal en los valores $x$, y, por lo tanto, que $y$ sigue una <l class = "definition">ley aproximadamente exponencial</l> en $x$. 
+
+En efecto, si $\log(y) = ax + b$, entonces,
+
+$$y = 10^{\log(y)} = 10^{ax+b} = 10^{ax}\cdot 10^b = \alpha^x\beta$$
+
+con $\alpha = 10^a$ y $\beta = 10^b$
+
+
+Si al representar unos puntos $(x_i, y_i)_{i=1,\dots,n}$ en escala doble logarítmica observamos que siguen aproximadamente una recta, esto querrá decir que los valores $\log(y)$ siguen una ley aproximadamente lineal en los valores $\log(x)$, y, por lo tanto, que $y$ sigue una <l class = "definition">ley aproximadamente potencial</l> en $x$. 
+
+En efecto, si $\log(y) = a\log(x) + b$, entonces, por propiedades de logaritmos
+
+$$y = 10^{\log(y)} = 10^{a\log(x)+b}= (10^{\log(x)})^a\cdot 10^b = x^{a}\beta$$
+con $\beta = 10^b$
+
+#### Ejemplo 2
+
+<div class = "example">
+**Ejemplo 2**
+
+En este caso trabajaremos no con un data frame, sino directamente con los dos vectores siguientes: 
+
+</div>
+
+```{r}
+dep = c(1.2,3.6,12,36)
+ind = c(20,35,61,82)
+```
+
+```{r, eval = FALSE}
+plot(ind,dep, main = "Escala lineal")
+plot(ind,dep, log = "y", main = "Escala semilogarítmica")
+```
+
+```{r, echo = FALSE}
+par(mfrow = c(1,2))
+plot(ind,dep, main = "Escala lineal")
+plot(ind,dep, log = "y", main = "Escala semilogarítmica")
+par(mfrow = c(1,1))
+```
+
+```{r}
+lm(log10(dep)~ind)
+summary(lm(log10(dep)~ind))$r.squared
+```
+
+Lo que acabamos de obtener es que 
+
+$$\log(dep) = 0.023\cdot ind - 0.33$$
+es una buena aproximación de nuestros datos.
+
+Con lo cual
+
+$$dep = 10^{0.023\cdot ind}\cdot10^{-0.33} = `r round(10^(0.023),3)`^{ind}\cdot `r round(10^(-0.33),3)`$$
+
+```{r}
+plot(ind,dep, main = "Curva de regresión")
+curve(1.054^x*0.468, add = TRUE, col = "purple") 
+```
+
+#### Ejemplo 3
+
+<div class = "example">
+**Ejemplo 3**
+
+En este caso trabajaremos con el siguiente data frame:
+
+</div>
+
+```{r}
+tiempo = 1:10
+gramos = c(0.097,0.709,2.698,6.928,15.242,29.944,52.902,83.903,120.612,161.711)
+d.f = data.frame(tiempo,gramos)
+```
+
+```{r,eval = FALSE}
+plot(d.f)
+plot(d.f, log = "y")
+plot(d.f, log = "xy")
+```
+
+
+```{r, echo = FALSE,fig.width=10}
+par(mfrow= c(1,3))
+plot(d.f)
+plot(d.f, log = "y")
+plot(d.f, log = "xy")
+par(mfrow= c(1,1))
+```
+
+
+```{r}
+lm(log10(gramos)~log10(tiempo), data = d.f)
+summary(lm(log10(gramos)~log10(tiempo), data = d.f))$r.squared
+```
+
+
+Lo que acabamos de obtener es que 
+
+$$\log(gramos) = 3.298\cdot \log(tiempo) - 1.093$$
+es una buena aproximación de nuestros datos.
+
+Con lo cual
+
+$$gramos = 10^{3.298\cdot\log(tiempo)}\cdot10^{-1.093} = tiempo^{3.298}\cdot `r round(10^(-1.093),3)`$$
+
+```{r}
+plot(d.f, main = "Curva de regresión")
+curve(x^(3.298)*0.081, add=TRUE, col = "purple")
+```
+
+
+Seguramente, en algún momento de nuestra vida ya sea hojeando un libro de matemáticas, curioseando artículos científicos... habréis visto una línea recta o algún otro tipo de curva en un gráfico que se ajusta a las observaciones representadas por medio de puntos en el plano.
+
+En general, la situación es la siguiente: supongamos que tenemos una serie de puntos en el plano cartesiano $\mathbb{R}^2$, de la forma
+$$(x_1,y_1),\ \dots,\ (x_n,y_n)$$
+que representan las observaciones de dos variables numéricas. Digamos que $x$ es la edad e $y$ el peso de $n$ estudiantes.
+
+
+Nuestro objetivo: describir la relación entre la <l class = "definition">variable independiente</l>, $x$, y la <l class = "definition">variable dependiente</l>, $y$, a partir de estas observaciones.
+
+Para ello, lo que haremos será buscar una función $y=f(x)$ cuya gráfica se aproxime lo máximo posible a nuestros pares ordenados $(x_i,y_i)_{i=1,\dots,n}$.
+
+Esta función nos dará un modelo matemático de cómo se comportan estas observaciones, lo cual nos permitirá entender mejor los mecanismos que relacionan las variables estudiadas o incluso, nos dará la oportunidad de hacer prediccciones sobre futuras observaciones.
+
+La primera opción es la más fácil. Consiste en estudiar si los puntos $(x_i,y_i)_{i=1,\dots,n}$ satisfacen una relación lineal de la forma
+$$y = ax +b$$
+con $a,b\in\mathbb{R}$.
+
+En este caso, se busca la recta $y = ax +b$ que mejor aproxime los puntos dados imponiendo que la suma de los cuadrados de las diferencias entre los valores $y_i$ y sus aproximaciones $\tilde{y}_i=ax_i+b$ sea mínima. Es decir, que
+$$\sum_{i=1}^n(y_i-\tilde{y}_i)^2$$ sea mínima
+
+
+
+El objetivo de este tema no es otro más que enseñaros como hacer uso de `R` para obtener esta recta de regresión.
+
+Veamos también cómo se puede evaluar numéricamente si esta recta se ajusta bien a las observaciones dadas.
+
+Para ello, introduciremos algunas funciones de `R` y haremos uso de transformaciones logarítmicas para tratar casos en los que los puntos dados se aproximen mejor mediante una función exponencial o potencial.
+
+
+Como ya hemos dicho, el objetivo de este tema es estudiar si existe relación lineal entre las variables dependiente e independiente.
+
+Por lo general, cuando tenemos una serie de observaciones emparejadas, $(x_i,y_i)_{i=1,\dots,n}$, la forma natural de almacenarlas en `R` es mediante una tabla de datos. Y la que más conocemos nostros es el data frame.
+
+#### Ejemplo 1
+
+<div class = "example">
+**Ejemplo 1**
+
+En este ejemplo, nosotros haremos uso del siguiente data frame:
+</div>
+
+```{r}
+#body = read.table("../data/bodyfat.txt", header = TRUE)
+#head(body,3)
+```
+
+
+<div class = "example">
+Más concretamente, trabajaremos con las variables `fat` y `weight`.
+</div>
+
+```{r}
+body2 = body[,c(2,4)]
+names(body2) = c("Grasa","Peso")
+str(body2)
+head(body2,3)
+```
+
+### Representación gráfica
+
+Al analizar datos, siempre es recomendable empezar con una representación gráfica que nos permita hacernos a la idea de lo que tenemos.
+
+Esto se consigue haciendo uso de la función `plot`, que ya hemos estudiado en detalle en lecciones anteriores. No obstante, para lo que necesitamos en este tema nos conformamos con un gráfico básico de estos puntos que nos muestre su distribución.
+
+#### Ejemplo 1
+
+```{r}
+plot(body2)
+```
+
+
+Para calcular la <l class = "definition">recta de regresión</l> con R de la familia de puntos $(x_i,y_i)_{i=1,\dots,n}$, si `x` es el vector $(x_i)_{i=1,\dots,n}$ e `y` es el vector $(y_i)_{i=1,\dots,n}$, entonces, su recta de regresión se calcula mediante la instrucción
+
+<div class = "aligncenter">
+`lm(y~x)`
+</div>
+
+Cuidado con la sintaxis: primero va el vector de las variables dependientes y, seguidamente después de una tilde `~`, va el vector de las variables independientes.
+
+Esto se debe a que `R` toma el significado de la tilde como "en función de". Es decir, la interpretación de `lm(y~x)` en R es "la recta de regresión de $y$ en función de $x$"
+
+Si los vectores `y` y `x` son, en este orden, la primera y la segunda columna de un data frame de dos variables, entonces es suficiente aplicar la función `lm` al data frame. 
+
+En general, si `x` e `y` son dos variables de un data frame, para calcular la recta de regresión de `y` en función de `x` podemos usar la instrucción
+
+<div class = "aligncenter">
+`lm(y~x, data = data fame)`
+</div>
+
+#### Ejemplo 1
+
+```{r}
+lm(body2$Peso~body2$Grasa) #Opción 1
+lm(Peso~Grasa, data = body2) #Opción 2
+```
+
+<div class = "example">
+Como podemos observar, las dos formas de llamar a la función dan exactamente lo mismo. Ninguna es mejor que la otra.
+
+El resultado obtenido en ambos casos significa que la recta de regresión para nuestros datos es 
+$$y = 2.151x+137.738$$
+
+Ahora, podemos superponer esta recta a nuestro gráfico anterior haciendo uso de la función `abline()`.
+</div>
+
+
+```{r}
+plot(body2)
+abline(lm(Peso~Grasa, data = body2), col = "purple")
+```
+
+##### Observación
+
+Hay que tener en cuenta que el análisis llevado a cabo hasta el momento de los pares de valores $(x_i,y_i)_{i=1,\dots,n}$ ha sido puramente descriptivo.
+
+Es decir, hemos mostrado que estos datos son consistentes con una función lineal, pero no hemos demostrado que la variable dependiente sea función aproximadamente lineal de la variable dependiente. Esto último necesitaría una demostración matemática, o bien un argumento biológico, pero no basta con una simple comprobación numérica.
+
+### Haciendo predicciones
+
+Podemos utilizar todo lo hecho hasta ahora para predecir valores $\tilde{y}_i$ en función de los $x_i$  resolviendo una simple ecuación lineal
+
+
+### Coeficiente de determinación
+
+El <l class = "definition">coeficiente de determinación</l>, $R^2$, nos es útil para evaluar numéricamente si la relación lineal obtenida es significativa o no.
+
+No explicaremos de momento como se define. Eso lo dejamos para curiosidad del usuario. Por el momento, es suficiente con saber que este coeficiente se encuentra en el intervalo $[0,1]$. Si $R^2$ es mayor a 0.9, consideraremos que el ajuste es bueno. De lo contrario, no.
+
+### La función summary
+
+La función `summary` aplicada a `lm` nos muestra los contenidos de este objeto. Entre ellos encontramos `Multiple R-squared`, que es el coeficiente de determinación, $R^2$.
+
+Para facilitarnos las cosas y ahorrarnos información que, de momento, no nos resulta de interés, podemos aplicar `summary(lm(...))$r.squared`
+
+#### Ejemplo 1
+
+```{r}
+summary(lm(Peso~Grasa, data = body2))
+```
+
+```{r}
+summary(lm(Peso~Grasa, data = body2))$r.squared
+```
+
+<div class = "example">
+En este caso, hemos obtenido un coeficiente de determinación de 0.3751, cosa que confirma que la recta de regresión no aproxima nada bien nuestros datos. 
+</div>
+
+### Rectas de regresión y transformaciones logarítmicas
+
+No siempre encontraremos dependencias lineales. A veces nos encontraremos otro tipo de dependencias, como por ejemplo pontencias o exponenciales.
+
+Estas se pueden transformar a lineales mediante un <l class = "definition">cambio de escala</l>
+
+### Escalas logarítmicas
+
+Por lo general, es habitual encontrarnos gráficos con sus ejes en <l class = "definition">escala lineal</l>. Es decir, las marcas en los ejes están igualmente espaciadas.
+
+A veces, es conveniente dibujar alguno de los ejes en <l class = "definition">escala logarítmica</l>, de modo que la misma distancia entre las marcas significa el mismo cociente entre sus valores. En otras palabras, un eje en escala logarítmica representa el [logaritmo](https://es.wikipedia.org/wiki/Logaritmo) de sus valores en escala lineal.
+
+Diremos que un gráfico está en <l class = "definition">escala semilogarítmica</l> cuando su eje de abcisas está en escala lineal y, el de ordenadas, en escala logarítmica.
+
+Diremos que un gráfico está en <l class = "definition">escala doble logarítmica</l> cuando ambos ejes están en escala logarítmica.
+
+### Interpretación gráfica
+
+Si al representar unos puntos $(x_i, y_i)_{i=1,\dots,n}$ en escala semilogarítmica observamos que siguen aproximadamente una recta, esto querrá decir que los valores $\log(y)$ siguen una ley aproximadamente lineal en los valores $x$, y, por lo tanto, que $y$ sigue una <l class = "definition">ley aproximadamente exponencial</l> en $x$. 
+
+En efecto, si $\log(y) = ax + b$, entonces,
+
+$$y = 10^{\log(y)} = 10^{ax+b} = 10^{ax}\cdot 10^b = \alpha^x\beta$$
+
+con $\alpha = 10^a$ y $\beta = 10^b$
+
+
+Si al representar unos puntos $(x_i, y_i)_{i=1,\dots,n}$ en escala doble logarítmica observamos que siguen aproximadamente una recta, esto querrá decir que los valores $\log(y)$ siguen una ley aproximadamente lineal en los valores $\log(x)$, y, por lo tanto, que $y$ sigue una <l class = "definition">ley aproximadamente potencial</l> en $x$. 
+
+En efecto, si $\log(y) = a\log(x) + b$, entonces, por propiedades de logaritmos
+
+$$y = 10^{\log(y)} = 10^{a\log(x)+b}= (10^{\log(x)})^a\cdot 10^b = x^{a}\beta$$
+con $\beta = 10^b$
+
+#### Ejemplo 2
+
+<div class = "example">
+**Ejemplo 2**
+
+En este caso trabajaremos no con un data frame, sino directamente con los dos vectores siguientes: 
+
+</div>
+
+```{r}
+dep = c(1.2,3.6,12,36)
+ind = c(20,35,61,82)
+```
+
+```{r, eval = FALSE}
+plot(ind,dep, main = "Escala lineal")
+plot(ind,dep, log = "y", main = "Escala semilogarítmica")
+```
+
+
+
+```{r, echo = FALSE}
+par(mfrow = c(1,2))
+plot(ind,dep, main = "Escala lineal")
+plot(ind,dep, log = "y", main = "Escala semilogarítmica")
+par(mfrow = c(1,1))
+```
+
+```{r}
+lm(log10(dep)~ind)
+summary(lm(log10(dep)~ind))$r.squared
+```
+
+Lo que acabamos de obtener es que 
+
+$$\log(dep) = 0.023\cdot ind - 0.33$$
+es una buena aproximación de nuestros datos.
+
+Con lo cual
+
+$$dep = 10^{0.023\cdot ind}\cdot10^{-0.33} = `r round(10^(0.023),3)`^{ind}\cdot `r round(10^(-0.33),3)`$$
+
+
+```{r}
+plot(ind,dep, main = "Curva de regresión")
+curve(1.054^x*0.468, add = TRUE, col = "purple") 
+```
+
+#### Ejemplo 3
+
+<div class = "example">
+**Ejemplo 3**
+
+En este caso trabajaremos con el siguiente data frame:
+
+</div>
+
+```{r}
+tiempo = 1:10
+gramos = c(0.097,0.709,2.698,6.928,15.242,29.944,52.902,83.903,120.612,161.711)
+d.f = data.frame(tiempo,gramos)
+```
+
+```{r,eval = FALSE}
+plot(d.f)
+plot(d.f, log = "y")
+plot(d.f, log = "xy")
+```
+
+
+```{r, echo = FALSE,fig.width=10}
+par(mfrow= c(1,3))
+plot(d.f)
+plot(d.f, log = "y")
+plot(d.f, log = "xy")
+par(mfrow= c(1,1))
+```
+
+
+
+```{r}
+lm(log10(gramos)~log10(tiempo), data = d.f)
+summary(lm(log10(gramos)~log10(tiempo), data = d.f))$r.squared
+```
+
+
+Lo que acabamos de obtener es que 
+
+$$\log(gramos) = 3.298\cdot \log(tiempo) - 1.093$$
+es una buena aproximación de nuestros datos.
+
+Con lo cual
+
+$$gramos = 10^{3.298\cdot\log(tiempo)}\cdot10^{-1.093} = tiempo^{3.298}\cdot `r round(10^(-1.093),3)`$$
+
+```{r}
+plot(d.f, main = "Curva de regresión")
+curve(x^(3.298)*0.081, add=TRUE, col = "purple")
+```
+
+
+
+
+
+## Distribuciones de Probabilidad
+
+### Experimento aleatorio
+
+<l class = "definition">Experimento aleatorio. </l> Experimento que efectuado en las mismas condiciones puede dar lugar a resultados diferentes
+
+<l class = "definition">Suceso elemental. </l> Cada uno de los posibles resultados del experimento aleatorio
+
+<l class = "definition">Espacio muestral. </l> Conjunto $\Omega$ formado por todos los sucesos elementales del experimento aleatorio
+
+<div class = "example">
+**Ejemplo**
+
+Lanzar una moneda es un experimento aleatorio
+
+Los sucesos elementales son: sacar cara ($C$) y sacar cruz ($+$)
+
+El espacio muestral de este experimento aleatorio es $\Omega = \{C,+\}$
+</div>
+
+### Sucesos
+
+<l class = "definition">Suceso. </l> Subconjunto del espacio muestral
+
+<l class = "definition">Suceso total o seguro. </l> $\Omega$
+
+<l class = "definition">Suceso vacío o imposible. </l> $\emptyset$
+
+<div class = "example">
+**Ejemplo**
+
+Lanzar un dado es un experimento aleatorio
+
+Algunos sucesos podrían ser: sacar número par ($\{2,4,6\}$), sacar mayor que 4 ($\{5,6\}$), sacar número múltiplo de 3 ($\{3,6\}$)...
+
+El suceso total de este experimento aleatorio es $\Omega = \{1,2,3,4,5,6\}$
+
+Un ejemplo de suceso imposible de este experimento aleatorio es $\emptyset = \{7\}$ (sacar 7)
+</div>
+
+
+
+<l class = "prop">Operaciones con sucesos. </l> Sean $A,B\subseteq \Omega$ sucesos. Entonces,
+
+- $A\cup B$ es el suceso unión (resultados pertenecen a $A$, o a $B$, o a ambos)
+- $A\cap B$ es el suceso intersección (resultados pertenecen a $A$ y $B$)
+- $A^c$ es el suceso complementario (resultados que no pertenecen a $A$)
+- $A-B = A\cap B^c$ es el suceso diferencia (resultados que pertenecen a $A$ pero no a $B$)
+
+<l class = "definition">Sucesos incompatibles. </l> Si $A\cap B = \emptyset$
+
+### Probabilidad
+
+<l class = "definition">Probabilidad de un suceso. </l>Número entre 0 y 1 (ambos incluidos) que mide la expectativa de que se dé este suceso
+
+<div class = "example">
+**Ejemplo**
+
+- La probabilidad de sacar un 6 al lanzar un dado estándar no trucado es $\frac{1}{6}$
+- La probabilidad de sacar un 6 al lanzar un dado de 4 caras es $0$
+- La probabilidad de sacar un 6 al lanzar un dado de 20 caras es $\frac{1}{20}$
+
+
+<l class = "definition">Probabilidad. </l> Sea $\Omega$ el espacio muestral de un experimento aleatorio. Suponiendo que $\Omega$ es **finito**, una probabilidad sobre $\Omega$ es una aplicación $$p: \mathcal{P}(\Omega)\longrightarrow [0,1]$$ que satisface
+
+- $0\le p(A)\le 1 \ \forall A\in\mathcal{P}(\Omega)$
+- $p(\Omega) = 1$
+- Si $\{A_1,\dots,A_n\}$ son sucesos incompatibles dos a dos ($A_i\cap A_j=\emptyset \ \forall i\ne j$), entonces $$p(A_1\cup\cdots \cup A_n)=p(A_1)+\cdots+p(A_n)$$
+
+<l class = "important">Notación: </l> Si $a\in\Omega$, escribiremos $p(a)$ en vez de $p(\{a\})$
+
+## Variables aleatorias
+
+<l class = "definition">Variable aleatoria. </l> Una variable aleatoria (v.a.) sobre $\Omega$ es una aplicación $$X: \Omega\longrightarrow \mathbb{R}$$ que asigna a cada suceso elemental $\omega$ un número real $X(\omega)$ 
+
+Puede entenderse como una descripción numérica de los resultados de un experimento aleatorio
+
+<l class = "definition">Dominio de una variable aleatoria. </l> $D_X$, es el conjunto de los valores que puede tomar
+
+### Sucesos de variables aleatorias
+
+Una variable aleatoria puede definir sucesos, de los cuales queremos conocer la probabilidad $p$
+
+- $p(X=a) = p(\{\omega\in\Omega \ |\  X(\omega) = a\})$
+- $p(X<b) = p(\{\omega\in\Omega \ |\  X(\omega) < b\})$
+- $p(X\le b) = p(\{\omega\in\Omega \ |\  X(\omega) \le b\})$
+- $p(a<X) = p(\{\omega\in\Omega \ |\  a<X(\omega)\})$
+- $p(a\le X) = p(\{\omega\in\Omega \ |\  a\le X(\omega)\})$
+- $p(a\le X\le b) = p(\{\omega\in\Omega \ |\  a\le X(\omega) \le b\})$
+- $p(a< X< b) = p(\{\omega\in\Omega \ |\  a< X(\omega) < b\})$
+- $p(X\in A) = p(\{\omega\in\Omega \ |\  X(\omega)\in A\})$
+
+### Función de distribución
+
+<l class = "definition">Función de distribución de la v.a. $X$.</l> Es una función  $$F:\mathbb{R}\longrightarrow [0,1]$$ definida por $F(x)=p(X\le x)$
+
+
+Sea $F$ una función de distribución de una v.a. $X$ y digamos $$F(a^-)=\lim_{x\rightarrow a^-}F(x)$$
+
+- $p(X\le a)=F(a)$
+- $p(X<a)=\lim_{b\rightarrow a,\  b<a}p(X\le b) = \lim_{b\rightarrow a,\  b<a} F(b) = F(a^-)$
+- $p(X=a) = p(X\le a)-p(X<a)=F(a)-F(a^-)$
+- $p(a\le X\le b) = p(X\le b)-p(X< a)=F(b)-F(a^-)$
+
+### Cuantiles
+
+<l class = "definition">Cuantil de orden $p$ de una v.a. $X$.</l> Es el $x_p\in\mathbb{R}$ más pequeño tal que $F(x_p)\ge p$
+
+Nótese que la mediana es el cuantil de orden 0.5
+
+## Variables aleatorias discretas
+
+### Variable aleatoria discreta
+
+<l class = "definition">Variable aleatoria discreta.</l> Una v.a. $X:\Omega\longrightarrow \mathbb{R}$ es discreta cuando $D_X$ es finito o un subconjunto de $\mathbb{N}$ 
+
+<l class = "definition">Función de probabilidad.</l> Es la función $f:\mathbb{R}\longrightarrow[0,1]$ definida por $$f(x) = p(X=x)$$
+
+Nótese que $f(x)=0$ si $x\not\in D_X$. Por tanto, interpretaremos la función de probabilidad como la función $$f:D_X\longrightarrow [0,1]$$
+
+### Esperanza
+
+<l class = "definition">Esperanza de una v.a. discreta.</l> Sea $f:D_X\longrightarrow[0,1]$ la función de probabilidad de $X$, entonces la esperanza respecto de la función de probabilidad es la suma ponderada de los elementos de $D_X$, multiplicando cada elemento $x$ de $D_X$ por su probabilidad, $$E(X) = \sum_{x\in D_X}x\cdot f(x)$$
+
+Si $g:D_X\longrightarrow \mathbb{R}$ es una aplicación $$E(g(X))=\sum_{x\in D_X}g(x)\cdot f(x)$$
+
+
+### Varianza
+
+<l class = "definition">Varianza de una v.a. discreta.</l> Sea $f:D_X\longrightarrow[0,1]$ la función de probabilidad de $X$, entonces la varianza respecto de la función de probabilidad es el valor esperado de la diferencia al cuadrado entre $X$ y su valor medio $E(X)$, $$Var(X)= E((X-E(X))^2) $$
+
+La varianza mide como de variados son los resultados de $X$ respecto de la media
+
+<div class = "exercise"> **Ejercicio.** Demostrar la siguiente igualdad. $$Var(X)= E(X^2)-(E(X))^2$$</div>
+
+
+
+Si $X$ es una v.a. discreta y $g:D_X\longrightarrow \mathbb{R}$ una función, $$Var(g(X))=E((g(X)-E(g(X)))^2)=E(g(X)^2)-(E(g(X)))^2$$
+
+### Desviación típica
+
+<l class = "definition">Desviación típica de una v.a. discreta.</l> Sea $f:D_X\longrightarrow[0,1]$ la función de probabilidad de $X$, entonces la desviación típica respecto de la función de probabilidad es $$\sigma(X)=\sqrt{Var(X)}$$
+
+Las unidades de la varianza son las de $X$ al cuadrado. En cambio, las de la desviación típica son las mismas unidades que las de $X$
+
+Si $X$ es una v.a. discreta y $g:D_X\longrightarrow \mathbb{R}$ una función, $$\sigma(g(X))=\sqrt{Var(g(X))}$$
+
+## Distribuciones de probabilidad
+
+### Distribución de probabilidad
+
+<l class = "definition">[Distribución de probabilidad](https://es.wikipedia.org/wiki/Distribución_de_probabilidad).</l> En teoría de la probabilidad y estadística, la distribución de probabilidad de una variable aleatoria es una función que asigna a cada suceso definido sobre la variable la probabilidad de que dicho suceso ocurra.
+
+### Distribuciones en `R`
+
+Dada cualquier variable aleatoria, `va`, `R` nos da cuatro funciones para poder trabajar con ellas:
+
+- `dva(x,...)`: Función de densidad o de probabilidad $f(x)$ de la variable aleatoria para el valor  $x$ del dominio de definición.
+- `pva(x,...)`: Función de distribución $F(x)$ de la variable aleatoria para el valor $x$ del dominio de definición.
+- `qva(p,...)`: Cuantil $p$-ésimo de la variable aleatoria (el valor de $x$ más pequeño tal que $F(x)\geq p$).
+- `rva(n,...)`: Generador de $n$ observaciones siguiendo la distribución de la variable aleatoria.
+
+### Distribuciones en `Python`
+
+Dada cualquier variable aleatoria, en `Python` tenemos las mismas cuatro funciones, sin que su nombre dependa de la misma:
+
+- `pmf(k,...)` o `pdf(x,...)`: Función de probabilidad $f(k)$ o de densidad $f(x)$ de la variable aleatoria para los valores $k$ o $x$ del dominio.
+- `cdf(x,...)`: Función de distribución $F(x)$ de la variable aleatoria para el valor $k$ del dominio.
+- `ppf(p,...)`: Cuantil $p$-ésimo de la variable aleatoria (el valor de $x$ más pequeño tal que $F(x)\geq p$).
+- `rvs(size,...)`: Generador de $size$ observaciones siguiendo la distribución de la variable aleatoria.
+
+También vale la pena conocer la función `stats(moments='mvsk')` que nos devuelve cuatro valores con los estadísticos de la media `m`, la varianza `v`, el sesgo `s` y la curtosis `k` de la distribución.
+
+
+
+### Distribución de Bernoulli
+
+Si $X$ es variable aleatoria que mide el "número de éxitos" y se realiza un único experimento con dos posibles resultados (éxito, que toma valor 1, o fracaso, que toma valor 0), diremos que $X$ se distribuye como una Bernoulli con parámetro $p$
+
+$$X\sim \text{Be}(p)$$
+
+donde $p$ es la probabilidad de éxito y $q = 1-p$ es la probabilidad de fracaso.
+
+- El **dominio** de $X$ será $D_X = \{0,1\}$
+- La **función de probabilidad** vendrá dada por $$f(k) = p^k(1-p)^{1-k} =  \left\{
+\begin{array}{rl}
+     p & \text{si } k=1 
+  \\ 1-p & \text{si } k=0
+  \\ 0 & \text{en cualquier otro caso}
+\end{array}
+\right.$$
+
+- La **función de distribución** vendrá dada por $$F(x) = \left\{
+\begin{array}{rl}
+     0 & \text{si } x<0 
+  \\ 1-p & \text{si } 0\le x<1
+  \\ 1 & \text{si } x\ge 1
+\end{array}
+\right.$$
+- **Esperanza** $E(X) = p$
+- **Varianza** $Var(X) = pq$
+
+
+El código de la distribución de Beroulli:
+
+- En `R` tenemos las funciones del paquete `Rlab`: `dbenr(x,prob), pbenr(q,prob), qbenr(p,prob), rbenr(n, prob)` donde `prob` es la probabilidad de éxito.
+- En `Python` tenemos las funciones del paquete `scipy.stats.bernoulli`: `pmf(k,p), cdf(k,p), ppf(q,p), rvs(p, size)` donde `p` es la probabilidad de éxito.
+
+
+#### Función de densidad
+Sea $X = Be(p=0.7)$, la distribución que modela la probabilidad de obtener una cara usando una moneda trucada. 
+
+$$f(k) = p^k(1-p)^{1-k},\ k\in \{0,1\}$$
+
+#### En R
+
+
+```{r}
+library(Rlab)
+dbern(0, prob= 0.7)  #probabilidad de obbtener 0
+dbern(1, prob = 0.7) #probabilidad de obbtener 1   0.3 + 0.7=1
+pbern(0, prob = 0.7) #probabilidad acumulada
+pbern(1, prob = 0.7) #probabilidad acumulada
+qbern(0.5, prob = 0.7)    ## cuantil, en este caso es la mediana
+qbern(0.25, prob = 0.7)   ## 1er Cuartil
+rbern(100, prob = 0.7) -> data  ##Genera 70 unos y 30 ceros (aprox)
+hist(data)
+```
+
+#### En Python
+
+```{python}
+from scipy.stats import bernoulli
+import matplotlib.pyplot as plt
+p = 0.7
+mean, var, skew, kurt = bernoulli.stats(p, moments = 'mvsk')
+print("Media %f"%mean)
+print("Varianza %f"%var)
+print("Sesgo %f"%skew)
+print("Curtosis %f"%kurt)
+
+fix, ax = plt.subplots(1,1)
+x = bernoulli.rvs(p, size = 1000)
+ax.hist(x)
+plt.show()
+```
+
+### Distribución Binomial
+
+Si $X$ es variable aleatoria que mide el "número de éxitos" y se realizan $n$ ensayos de Bernoulli independientes entre sí, diremos que $X$ se distribuye como una Binomial con parámetros $n$ y $p$
+
+$$X\sim \text{B}(n,p)$$
+
+donde $p$ es la probabilidad de éxito y $q = 1-p$ es la probabilidad de fracaso
+
+- El **dominio** de $X$ será $D_X = \{0,1,2,\dots,n\}$
+- La **función de probabilidad** vendrá dada por $$f(k) = {n\choose k}p^k(1-p)^{n-k} $$
+
+
+- La **función de distribución** vendrá dada por $$F(x) = \left\{
+\begin{array}{cl}
+     0 & \text{si } x<0 
+  \\ \sum_{k=0}^xf(k) & \text{si } 0\le x<n
+  \\ 1 & \text{si } x\ge n
+\end{array}
+\right.$$
+- **Esperanza** $E(X) = np$
+- **Varianza** $Var(X) = npq$
+
+<l class = "important">Atención.</l> Observemos que la distribución de Bernoulli es un caso particular de la Binomial. Basta tomar $n=1$ y tendremos que $X\sim \text{Be}(p)$ y $X\sim\text{B}(1,p)$ son equivalentes.
+
+
+
+
+```{r, echo = FALSE}
+par(mfrow = c(1,2))
+plot(0:50,dbinom(0:50,50,0.5),col = "purple", xlab = "", ylab = "", main = "Función de probabilidad de una B(50,0.5)")
+plot(0:50, pbinom(0:50,50,0.5),col = "purple", xlab = "", ylab = "", main = "Función de distribución de una B(50,0.5)", ylim = c(0,1))
+par(mfrow= c(1,1))
+```
+
+El código de la distribución Binomial:
+
+- En `R` tenemos las funciones del paquete `Rlab`: `dbinom(x, size, prob), pbinom(q,size, prob), qbinom(p, size, prob), rbinom(n, size, prob)` donde `prob` es la probabilidad de éxito y `size` el número de ensayos del experimento.
+- En `Python` tenemos las funciones del paquete `scipy.stats.binom`: `pmf(k,n,p), cdf(k,n,p), ppf(q,n,p), rvs(n, p, size)` donde `p` es la probabilidad de éxito y `n` el número de ensayos del experimento.
+
+#### Función de densidad
+Sea $X = B(n = 30, p = 0.6)$,
+
+TODO: escribir la FDens y la FDistr
+
+#### En `R`
+
+```{r}
+library(Rlab)
+n = 30
+p = 0.6
+plot(0:n, dbinom(0:n, size = n, prob = p))
+plot(0:n, pbinom(0:n, size = n, prob = p))
+qbinom(0.5, n, p)
+qbinom(0.25, n, p)
+hist(rbinom(100000, n, p), breaks = 0:30)
+```
+
+#### En Python
+
+```{python}
+from scipy.stats import binom 
+import matplotlib.pyplot as plt
+import numpy as np
+
+fig, ax = plt.subplots(1,1)
+n = 7
+p = 0.4
+
+mean, var, skew, kurt = binom.stats(n, p, moments = 'mvsk')
+
+print("Media %f"%mean)
+print("Varianza %f"%var)
+print("Sesgo %f"%skew)
+print("Curtosis %f"%kurt)
+
+
+x = np.arange(0, n+1)
+ax.plot(x, binom.pmf(x, n, p), 'bo', ms = 8, label = "Función de densidad de B(7,0.4)")
+ax.vlines(x, 0, binom.pmf(x,n,p), colors = 'b', lw = 4, alpha = 0.5)
+
+rv = binom(n,p)
+ax.vlines(x,0, rv.pmf(x), colors = 'k', linestyles='--', lw = 1, label = "Distribución teórica")
+
+ax.legend(loc = 'best', frameon = False)
+
+plt.show()
+
+
+fix, ax = plt.subplots(1,1)
+r = binom.rvs(n, p, size = 10000)
+ax.hist(r, bins = n)
+plt.show()
+```
+
+
+
+### Distribución Geométrica
+
+Si $X$ es variable aleatoria que mide el "número de repeticiones independientes del experimento hasta haber conseguido éxito", diremos que $X$ se distribuye como una Geométrica con parámetro $p$
+
+$$X\sim \text{Ge}(p)$$
+donde $p$ es la probabilidad de éxito y $q = 1-p$ es la probabilidad de fracaso
+
+- El **dominio** de $X$ será $D_X= \{0,1,2,\dots\}$ o bien $D_X = \{1,2,\dots\}$ en función de si empieza en 0 o en 1, respectivamente
+
+- La **función de probabilidad** vendrá dada por $$f(k) = (1-p)^{k}p \qquad\text{ si empieza en 0}$$
+$$f(k) = (1-p)^{k-1}p \qquad\text{ si empieza en 1}$$
+
+- La **función de distribución** vendrá dada por $$F(x) = \left\{
+\begin{array}{cl}
+     0 & \text{si } x<0 
+  \\ 1-(1-p)^{k+1} & \text{si } k\le x<k+1,\ k\in\mathbb{N}
+\end{array}
+\right.$$ 
+- **Esperanza** $E(X) = \frac{1-p}{p}$ si empieza en 0 y E$(X) = \frac{1}{p}$ si empieza en 1
+- **Varianza** $Var(X) = \frac{1-p}{p^2}$
+- <l class = "prop">Propiedad de la falta de memoria.</l> Si $X$ es una v.a. $\text{Ge}(p)$, entonces, $$p\{X\ge m+n:\ X\ge n\} = p\{X\ge m\}\ \forall m,n=0,1,\dots$$
+
+
+```{r, echo = FALSE}
+par(mfrow = c(1,2))
+plot(0:20, dgeom(0:20,0.5),col = "purple", xlab = "", ylab = "", main = "Función de probabilidad de una Ge(0.5)")
+plot(0:20, pgeom(0:20,0.5),col = "purple", xlab = "", ylab = "", main = "Función de distribución de una Ge(0.5)", ylim = c(0,1))
+par(mfrow= c(1,1))
+```
+
+
+El código de la distribución Geométrica:
+
+- En `R` tenemos las funciones del paquete `Rlab`: `dgeom(x, prob), pgeom(q, prob), qgeom(p, prob), rgeom(n, prob)` donde `prob` es la probabilidad de éxito  del experimento.
+- En `Python` tenemos las funciones del paquete `scipy.stats.geom`: `pmf(k,p), cdf(k,p), ppf(q,p), rvs(p, size)` donde `p` es la probabilidad de éxito del experimento.
+
+#### Función de densidad
+
+Sea $X=Geom(p=0.1)$ la distribución que modela la probabilidad de intentar abrir una puerta hasta conseguirlo.
+
+$$f(k) = (1-p)^{k-1}p$$
+
+
+#### En `R`
+
+```{r}
+library(Rlab)
+p = 0.1
+plot(0:20, dgeom(0:20, p))
+plot(0:20, pgeom(0:20, p), ylim = c(0,1))
+qgeom(0.5, p)
+qgeom(0.75, p)
+hist(rgeom(10000, p))
+```
+
+#### En Python
+```{python}
+from scipy.stats import geom
+import matplotlib.pyplot as plt
+import numpy as np
+
+fig, ax = plt.subplots(1,1)
+p = 0.3
+mean, var, skew, kurt = geom.stats(p, moments = 'mvsk')
+print("Media %f"%mean)
+print("Varianza %f"%var)
+print("Sesgo %f"%skew)
+print("Curtosis %f"%kurt)
+
+x = np.arange(geom.ppf(0.01,p), geom.ppf(0.99, p))
+ax.plot(x, geom.pmf(x, p), 'bo', ms = 8, label = "Función de probabilidad de Geom(0.3)")
+ax.vlines(x,0,geom.pmf(x,p),  colors = 'b', lw = 4, alpha = 0.5)
+
+rv = geom(p)
+ax.vlines(x,0,rv.pmf(x), colors = 'k', linestyles = '--', lw = 1, label = "Frozen PMF")
+ax.legend(loc = 'best')
+plt.show()
+
+
+fig, ax = plt.subplots(1,1)
+prob = geom.cdf(x,p)
+ax.plot(x, prob, 'bo', ms = 8, label = "Función de distribución acumulada")
+plt.show()
+
+fig, ax = plt.subplots(1,1)
+r = geom.rvs(p, size = 10000)
+plt.hist(r)
+plt.show()
+```
+
+### Distribución Hipergeométrica
+
+Consideremos el experimento "extraer a la vez (o una detrás de otra, sin retornarlos) $n$ objetos donde hay $N$ de tipo A y $M$ de tipo B". Si $X$ es variable aleatoria que mide el "número de objetos del tipo A", diremos que $X$ se distribuye como una Hipergeométrica con parámetros $N,M,n$
+
+$$X\sim \text{H}(N,M,n)$$
+
+- El dominio de $X$ será $D_X = \{0,1,2,\dots,N\}$ (en general)
+- La función de probabilidad vendrá dada por 
+
+
+$$f(k)=\frac{\left( \begin{array}{c}
+n\\
+k
+\end{array}\right) \left(\begin{array}{c}
+M\\
+n-k
+\end{array}\right)}{\left( \begin{array}{c}
+N+N\\
+n
+\end{array}\right)  } $$
+
+
+La **función de distribución** vendrá dada por $$F(x) = \left\{
+\begin{array}{cl}
+     0 & \text{si } x<0 
+  \\ \sum_{k=0}^xf(k) & \text{si } 0\le x<n
+  \\ 1 & \text{si } x\ge n
+\end{array}
+\right.$$
+- **Esperanza** $E(X) = \frac{nN}{N+M}$ 
+- **Varianza** $Var(X) = \frac{nNM}{(N+M)^2}\cdot\frac{N+M-n}{N+M-1}$
+
+
+```{r, echo = FALSE}
+par(mfrow = c(1,2))
+plot(0:30, dhyper(0:30,10,20,10),col = "purple", xlab = "", ylab = "", main = "Función de probabilidad de una H(20,10,30)")
+plot(0:30, phyper(0:30,10,20,10),col = "purple", xlab = "", ylab = "", main = "Función de distribución de una H(20,10,30)", ylim = c(0,1))
+par(mfrow= c(1,1))
+```
+
+
+El código de la distribución Hipergeométrica:
+
+- En `R` tenemos las funciones del paquete `Rlab`: `dhyper(x, m, n, k), phyper(q,  m, n, k), qhyper(p,  m, n, k), rhyper(nn,  m, n, k)` donde `m` es el número de objetos del primer tipo, `n` el número de objetos del segundo tipo y `k` el número de extracciones realizadas.
+- En `Python` tenemos las funciones del paquete `scipy.stats.hypergeom`: `pmf(k,M, n, N), cdf(k,M, n, N), ppf(q,M, n, N), rvs(M, n, N, size)` donde `M` es el número de objetos del primer tipo, `N` el número de objetos del segundo tipo y `n` el número de extracciones realizadas.
+
+
+Supongamos que tenemos 20 animales, de los cuales 7 son perros. Queremos medir la probabilidad de encontrar un número determinado de perros si elegimos $k=12$ animales al azar. 
+
+#### En `R`
+
+```{r}
+library(Rlab)
+M = 7
+N = 13
+k = 12
+dhyper(x = 0:12, m = M, n = N, k = k)
+phyper(q = 0:12, m = M, n = N, k = k)
+qhyper(p = 0.5, m = M, n = N, k = k)
+rhyper(nn = 1000, m = M, n = N, k = k) -> data
+hist(data, breaks = 8)
+```
+
+
+#### En `Python`
+```{python}
+from scipy.stats import hypergeom
+import matplotlib.pyplot as plt
+import numpy as np
+
+[M, n, N] = [20, 7, 6]
+rv = hypergeom(M, n, N)
+x = np.arange(0, n+1)
+y = rv.pmf(x)
+
+mean, var, skew, kurt = rv.stats(moments = 'mvsk')
+print("Media %f"%mean)
+print("Varianza %f"%var)
+print("Sesgo %f"%skew)
+print("Curtosis %f"%kurt)
+
+fig = plt.figure()
+ax = fig.add_subplot(111)
+ax.plot(x, y, 'bo' )
+ax.vlines(x,0,y, lw = 2, alpha = 0.5)
+ax.set_xlabel("Número de perros entre los 12 elegidos al azar")
+ax.set_ylabel("Distribución de probabilidad de H(13,7,12)")
+plt.show()
+```
+
+
+
+### Distribución de Poisson
+
+Si $X$ es variable aleatoria que mide el "número de eventos en un cierto intervalo de tiempo", diremos que $X$ se distribuye como una Poisson con parámetro $\lambda$
+
+$$X\sim \text{Po}(\lambda)$$
+donde $\lambda$ representa el número de veces que se espera que ocurra el evento durante un intervalo dado
+
+- El **dominio** de $X$ será $D_X = \{0,1,2,\dots\}$
+
+- La **función de probabilidad** vendrá dada por $$f(k) = \frac{e^{-\lambda}\lambda^k}{k!}$$
+
+La **función de distribución** vendrá dada por $$F(x) = \left\{
+\begin{array}{cl}
+     0 & \text{si } x<0 
+  \\ \sum_{k=0}^xf(k) & \text{si } 0\le x<n
+  \\ 1 & \text{si } x\ge n
+\end{array}
+\right.$$ 
+- **Esperanza** $E(X) = \lambda$
+- **Varianza** $Var(X) = \lambda$
+
+
+```{r, echo = FALSE}
+par(mfrow = c(1,2))
+plot(0:20, dpois(0:20,2),col = "purple", xlab = "", ylab = "", main = "Función de probabilidad de una Po(2)")
+plot(0:20, ppois(0:20,2),col = "purple", xlab = "", ylab = "", main = "Función de distribución de una Po(2)", ylim = c(0,1))
+par(mfrow= c(1,1))
+```
+
+
+El código de la distribución de Poisson:
+
+- En `R` tenemos las funciones del paquete `Rlab`: `dpois(x, lambda), ppois(q,lambda), qpois(p,lambda), rpois(n, lambda)` donde `lambda` es el número esperado de eventos por unidad de tiempo de la distribución.
+- En `Python` tenemos las funciones del paquete `scipy.stats.poisson`: `pmf(k,mu), cdf(k,mu), ppf(q,mu), rvs(M,mu)` donde `mu` es el número esperado de eventos por unidad de tiempo de la distribución.
+
+Supongamos que $X$ modela el número de errores por página que tiene un valor esperado $\lambda = 5$.
+
+#### En `R`
+```{r}
+l = 5
+plot(0:20, dpois(x = 0:20, lambda = l))
+ppois(0:20, l)
+qpois(0.5, 5)
+rpois(1000, lambda = l) -> data
+hist(data)
+```
+
+#### En `Python`
+
+```{python}
+import numpy as np
+from scipy.stats import poisson
+import matplotlib.pyplot as plt
+
+
+fig, ax = plt.subplots(1,1)
+mu = 5
+mean, var, skew, kurt = poisson.stats(mu, moments = 'mvsk')
+print("Media %f"%mean)
+print("Varianza %f"%var)
+print("Sesgo %f"%skew)
+print("Curtosis %f"%kurt)
+
+x = np.arange(0, 12)
+ax.plot(x, poisson.pmf(x, mu), 'bo', ms = 8, label = 'Poisson(0.8)')
+ax.vlines(x,0, poisson.pmf(x,mu), colors = 'b', lw = 4, alpha = 0.5)
+ax.legend(loc = "best", frameon = False)
+plt.show()
+```
+
+
+### Distribución Binomial Negativa
+
+Si $X$ es variable aleatoria que mide el "número de repeticiones hasta observar los $r$ éxitos en ensayos de Bernoulli", diremos que $X$ se distribuye como una Binomial Negativa con parámetros $r$ y $p$, $$X\sim\text{BN}(r,p)$$ donde $p$ es la probabilidad de éxito
+
+- El **dominio** de $X$ será $D_X = \{r, r+1, r+2,\dots\}$
+- La **función de probabilidad** vendrá dada por $$f(k) = {k-1\choose r-1}p^r(1-p)^{k-r}, k\geq r$$
+
+
+- La **función de distribución** no tiene una expresión analítica. 
+- **Esperanza** $E(X) = \frac{r}{p}$
+- **Varianza** $Var(X) = r\frac{1-p}{p^2}$
+
+```{r, echo = FALSE}
+par(mfrow = c(1,2))
+exitos = 5
+size = 20
+plot(c(rep(0,exitos),exitos:(size+exitos)), c(rep(0,exitos),dnbinom(0:size,exitos,0.5)),col = "purple", xlab = "", ylab = "", main = "Función de probabilidad de una BN(5, 0.5)")
+plot(c(rep(0,exitos),exitos:(size+exitos)), c(rep(0,exitos),pnbinom(0:size,exitos,0.5)),col = "purple", xlab = "", ylab = "", main = "Función de distribución de una BN(5, 0.5)")
+par(mfrow= c(1,1))
+```
+
+
+El código de la distribución Binomial Negativa:
+
+- En `R` tenemos las funciones del paquete `Rlab`: `dnbinom(x, size, prop), pnbinom(q, size, prop), qnbinom(p, size, prop), rnbinom(n, size, prop)` donde `size` es el número de casos exitosos y `prob` la probabilidad del éxito.
+- En `Python` tenemos las funciones del paquete `scipy.stats.nbinom`: `pmf(k,n,p), cdf(k,n,p), ppf(q,n,p), rvs(n,p)` donde `n`es el número de casos exitosos y `p` la probabilidad del éxito.
+
+
+
+### Distribuciones discretas en R
+
+R conoce las distribuciones de probabilidad más importantes.
+
+Distribución |  Instrucción en R  |  Instrucción en Python  |  Parámetros                                
+--------------------|--------------------|--------------------|--------------------
+Bernoulli | `bern` | `scipy.stats.bernoulli` | probabilidad de éxito $p$
+Binomial | `binom` | `scipy.stats.binom` | tamaño de la muestra $n$ y probabilidad de éxito $p$
+Geométrica | `geom` | `scipy.stats.geom` | probabilidad de éxito $p$
+Hipergeométrica | `hyper` | `scipy.stats.hypergeom` | $N,M,n$
+Poisson | `pois` | `scipy.stats.poisson` | esperanza $\lambda$
+Binomial Negativa | `nbinom` | `scipy.stats.nbinom` | número de éxitos $r$ y probabilidad de éxito $p$
+
+
+### Variables aleatorias continuas
+
+<l class = "definition">Variable aleatoria continua.</l> Una v.a. $X:\Omega\longrightarrow\mathbb{R}$ es continua cuando su función de distribución $F_X:\mathbb{R}\longrightarrow[0,1]$ es continua
+
+En este caso, $F_X(x)=F_X(x^-)$ y, por este motivo, $$p(X=x)=0\ \forall x\in\mathbb{R}$$
+pero esto no significa que sean sucesos imposibles
+
+#### Función de densidad
+
+<l class = "definition">Función de densidad.</l> Función $f:\mathbb{R}\longrightarrow\mathbb{R}$ que satisface 
+
+- $f(x)\ge 0\ \forall x\in\mathbb{R}$
+- $\int_{-\infty}^{+\infty}f(t)dt=1$
+
+Una función de densidad puede tener puntos de discontinuidad
+
+#### Variable aleatoria continua
+
+Toda variable aleatoria $X$ con función de distribución 
+
+$$F(x)=\int_{-\infty}^{x}f(t)dt\ \forall x\in\mathbb{R}$$ para cualquier densidad $f$ es una v.a. continua
+
+Diremos entonces que $f$ es la función de densidad de $X$
+
+A partir de ahora, considerareos solamente las v.a. $X$ continuas que tienen función de densidad
+
+
+#### Esperanza
+
+<l class = "definition">Esperanza de una v.a. continua.</l> Sea $X$ v.a. continua con densidad $f_X$. La esperanza de $X$ es $$E(X)=\int_{-\infty}^{+\infty}x\cdot f_X(x)dx$$
+
+Si el dominio $D_X$ de $X$ es un intervalo de extremos $a<b$, entonces $$E(X)=\int_a^b x\cdot f_X(x)dx$$
+
+Sea $g:D_X\longrightarrow \mathbb{R}$ una función continua. Entonces, 
+
+$$E(g(X)) = \int_{-\infty}^{+\infty}g(x)\cdot f_X(x)dx$$
+
+Si el dominio $D_X$ de $X$ es un intervalo de extremos $a<b$, entonces $$E(g(X))=\int_a^b g(x)\cdot f_X(x)dx$$
+
+#### Varianza
+
+<l class = "definition">Varianza de una v.a. continua.</l> Como en el caso discreto, $$Var(X)=E((X-E(X))^2)$$
+
+y se puede demostrar que
+
+$$Var(X)=E(X^2)-(E(X))^2$$
+
+#### Desviación típica
+
+<l class = "definition">Desviación típica de una v.a. continua.</l> Como en el caso discreto, $$\sigma = \sqrt{Var(X)}$$
+
+### Distribuciones continuas más conocidas
+
+
+- [Uniforme](https://es.wikipedia.org/wiki/Distribución_uniforme_continua)
+- [Exponencial](https://es.wikipedia.org/wiki/Distribución_exponencial)
+- [Normal](https://es.wikipedia.org/wiki/Distribución_normal)
+- [Khi cuadrado](https://es.wikipedia.org/wiki/Distribución_χ²)
+- [t de Student](https://es.wikipedia.org/wiki/Distribución_t_de_Student)
+- [F de Fisher](https://es.wikipedia.org/wiki/Distribución_F)
+
+
+
+### Distribución Uniforme
+
+Una v.a. continua $X$ tiene distribución uniforme sobre el intervalo real $[a,b]$ con $a<b$, $X\sim\text{U}(a,b)$ si su función de densidad es $$f_X(x)=\left\{
+\begin{array}{rl}
+     \frac{1}{b-a} & \text{si } a\le x\le b
+  \\ 0 & \text{en cualquier otro caso}
+\end{array}
+\right.$$
+
+Modela el elegir un elemento del intervalo $[a,b]$ de manera equiprobable
+
+
+- El **dominio** de $X$ será $D_X = [a,b]$
+
+- La **función de distribución** vendrá dada por $$F_X(x)=\left\{
+\begin{array}{rl}
+    0 & \text{si } x<a
+  \\ \frac{x-a}{b-a} & \text{si } a\le x< b
+  \\ 1 & \text{si } x\ge b
+\end{array}
+\right.$$
+
+- **Esperanza** $E(X) = \frac{a+b}{2}$
+- **Varianza** $Var(X) = \frac{(b-a)^2}{12}$
+
+
+```{r, echo = FALSE}
+par(mfrow=c(1,2))
+plot(c(0,1,1:4,4,5), c(0,0,dunif(1:4,min = 1, max = 4),0,0),col = "purple", xlab = "", ylab = "", main = "Función de densidad de una U(1,4)", type = "o", ylim = c(0,1))
+plot(0:5, punif(0:5,min = 1, max = 4),col = "purple", xlab = "", ylab = "", main = "Función de distribución de una U(1,4)", type = "o")
+par(mfrow=c(1,1))
+```
+
+El código de la distribución Uniforme:
+
+- En `R` tenemos las funciones del paquete `stats`: `dunif(x, min, max), punif(q, min, max), qunif(p, min, max), runif(n,  min, max)` donde `min` y `max` són los extremos de los intervalos de la distribución uniforme.
+- En `Python` tenemos las funciones del paquete `scipy.stats.uniform`: `pdf(k,loc, scale), cdf(k,loc, scale), ppf(q,loc, scale), rvs(n,loc, scaler)` donde la distribución uniforme está definida en el intervalo `[loc, loc+scale]`.
+
+Supongamos que $X\sim U([0,1])$ entonces podemos estudiar sus parámetros
+
+#### En `R` 
+```{r}
+a = 0
+b = 1
+
+x = seq(-0.1, 1.1, 0.1)
+plot(x, dunif(x, min = a, max = b))
+plot(x, punif(x, a, b), type = "l")
+qunif(0.5, a, b)
+runif(1000000, a, b) -> data
+hist(data)
+```
+
+#### En `Python` 
+
+```{python}
+
+from scipy.stats import uniform
+import matplotlib.pyplot as plt 
+import numpy as np
+
+a = 0
+b = 1
+
+loc = a
+scale = b-a
+
+fig, ax = plt.subplots(1,1)
+
+rv = uniform(loc = loc, scale = scale)
+
+mean, var, skew, kurt = rv.stats(moments = 'mvsk')
+print("Media %f"%mean)
+print("Varianza %f"%var)
+print("Sesgo %f"%skew)
+print("Curtosis %f"%kurt)
+
+x = np.linspace(-0.1, 1.1, 120)
+ax.plot(x, rv.pdf(x), 'k-', lw = 2, label = "U(0,1)")
+
+r = rv.rvs(size = 100000)
+ax.hist(r, density = True, histtype = "stepfilled", alpha = 0.25)
+
+ax.legend(loc = 'best', frameon = False)
+plt.show()
+```
+
+
+### Distribución Exponencial
+
+Una v.a. $X$ tiene distribución exponencial de parámetro $\lambda$, $X\sim\text{Exp}(\lambda)$, si su función de densidad es $$f_X(x)=\left\{
+\begin{array}{rl}
+     0 & \text{si }  x\le 0
+  \\ \lambda\cdot e^{-\lambda x} & \text{si }x>0
+\end{array}
+\right.$$
+
+<l class = "prop">Teorema. </l> Si tenemos un proceso de Poisson de parámetro $\lambda$ por unidad de tiempo, el tiempo que pasa entre dos sucesos consecutivos es una v.a. $\text{Exp}(\lambda)$ 
+
+<l class = "prop">Propiedad de la pérdida de memoria. </l> Si $X$ es v.a. $\text{Exp}(\lambda)$, entonces $$p(X>s+t\ :\ X>s)=p(X>t)\ \forall s,t>0$$
+
+
+- El **dominio** de $X$ será $D_X = [0,\infty)$
+
+- La **función de distribución** vendrá dada por $$F_X(x)=\left\{
+\begin{array}{rl}
+    0 & \text{si } x\le 0
+  \\ 1-e^{-\lambda x} & \text{si } x>0
+\end{array}
+\right.$$
+
+- **Esperanza** $E(X) = \frac{1}{\lambda}$
+- **Varianza** $Var(X) = \frac{1}{\lambda^2}$
+
+
+```{r, echo = FALSE}
+par(mfrow = c(1,2))
+plot(0:20, dexp(0:20,0.2),col = "purple", xlab = "", ylab = "", main = "Función de densidad de una Exp(0.2)", type = "o")
+plot(0:20, pexp(0:20,0.2),col = "purple", xlab = "", ylab = "", main = "Función de distribución de una Exp(0.2)", type = "o", ylim = c(0,1))
+par(mfrow = c(1,1))
+```
+
+
+El código de la distribución Exponencial:
+
+- En `R` tenemos las funciones del paquete `stats`: `dexp(x, rate), pexp(q, rate), qexp(p, rate), rexp(n,  rate)` donde `rate`$=\lambda$ es el tiempo entre dos sucesos consecutivos de la distribución.
+- En `Python` tenemos las funciones del paquete `scipy.stats.expon`: `pdf(k, scale), cdf(k, scale), ppf(q, scale), rvs(n, scaler)` donde `scale`$=1/\lambda$ es la inversa del tiempo entre dos sucesos consecutivos de la distribución.
+
+#### En `Python`
+
+```{python}
+from scipy.stats import expon
+import numpy as np
+import matplotlib.pyplot as plt
+
+fig, ax = plt.subplots(1,1)
+
+lam = 3
+rv = expon(scale = 1/lam)
+
+mean, var, skew, kurt = rv.stats(moments = 'mvsk')
+print("Media %f"%mean)
+print("Varianza %f"%var)
+print("Sesgo %f"%skew)
+print("Curtosis %f"%kurt)
+
+x = np.linspace(0, 3, 1000)
+ax.plot(x, rv.pdf(x), 'r-', lw = 5, alpha = 0.6, label = "Exp(10)")
+
+r = rv.rvs(size = 100000)
+ax.hist(r, density = True, histtype = 'stepfilled', alpha = 0.2)
+
+ax.legend(loc = "best", frameon= False)
+plt.show()
+```
+
+
+
+
+
+
+### Distribución Normal
+
+Una v.a. $X$ tiene distribución normal o gaussiana de parámetros $\mu$ y $\sigma$, $X\sim\mathcal{N}(\mu,\sigma)$ si su función de densidad es $$f_X(x)=\frac{1}{\sqrt{2\pi}\sigma}e^{-\frac{(x-\mu)^2}{2\sigma^2}}\quad \forall x\in\mathbb{R}$$
+
+La gráfica de $f_X$ es conocida como la <l class = "definition">Campana de Gauss</l>
+
+Cuando $\mu = 0$ y $\sigma = 1$, diremos que la v.a. $X$ es <l class = "definition">estándar</l> y la indicaremos usualmente como $Z$, la cual tendrá función de densidad
+$$f_Z(z)=\frac{1}{\sqrt{2\pi}}e^{-\frac{z^2}{2}}\quad \forall z\in\mathbb{R}$$
+
+
+- **Esperanza** $E(X) = \mu$
+- **Varianza** $Var(X) = \sigma^2$
+
+En particualar, si $Z$ sigue una distribución estándar,
+
+- **Esperanza** $E(X) = 0$
+- **Varianza** $Var(X) = 1$
+
+
+
+```{r, echo = FALSE}
+par(mfrow = c(1,2))
+z_scores <- seq(-10, 10, by = .1)
+dvalues <- dnorm(z_scores)
+plot(z_scores, dvalues, ylab = "", xlab= "",
+     type = "l", 
+     col = "purple",
+     main = "Función de densidad de una N(0,1)")
+dvalues <- pnorm(z_scores)
+plot(z_scores, dvalues, ylab = "", xlab= "",
+     type = "l", 
+     col = "purple",
+     main = "Función de distribución de una N(0,1)", ylim = c(0,1))
+par(mfrow = c(1,1))
+```
+
+
+El código de la distribución Normal:
+
+- En `R` tenemos las funciones del paquete `stats`: `dnorm(x, mean, sd), pnorm(q,  mean, sd), qnorm(p,  mean, sd), rnorm(n,   mean, sd)` donde `mean` es la media y `sd` es la desviación estándar de la normal $N(\mu, \sigma)$.
+- En `Python` tenemos las funciones del paquete `scipy.stats.normal`: `pdf(k, mu, scale), cdf(k,  mu, scale), ppf(q,  mu, scale), rvs(n,  mu, scale)`  donde `mu` es la media y `scale` es la desviación estándar de la normal $N(\mu, \sigma)$.
+
+
+
+<l class = "prop">Estandarización de una v.a. normal.</l> Si $X$ es una v.a. $\mathcal{N}(\mu,\sigma)$, entonces $$Z=\frac{X-\mu}{\sigma}\sim\mathcal{N}(0,1)$$
+
+Las probabilidades de una normal estándar $Z$ determinan las de cualquier $X$ de tipo $\mathcal{N}(\mu,\sigma)$:
+
+$$p(X\le x)=p\left(\frac{X-\mu}{\sigma}\le\frac{x-\mu}{\sigma}\right)=p\left(Z\le\frac{x-\mu}{\sigma}\right)$$
+
+$F_Z$ no tiene expresión conocida.
+
+Se puede calcular con cualquier programa, como por ejemplo R, o bien a mano utilizando las [tablas de la $\mathcal{N}(0,1)$](https://github.com/joanby/r-basic/blob/master/teoria/TablaNormal.pdf)
+
+Con las tablas se pueden calcular tanto probabilidades como cuantiles
+
+#### Distribución Normal en R y Python
+
+Si a la hora de llamar a alguna de las 4 funciones siguientes: `dnorm`, `pnorm`, `qnorm` o `rnorm` no especificásemos los parámetros de  la media ni la desviación típica, R entiende que se trata de la normal estándar: la $\mathcal{N}(0,1)$.
+
+Es decir, R interpreta $\mu = 0$ y $\sigma = 1$
+
+En Python ocurre exactamente lo mismo.
+
+### Otras distribuciones importantes
+
+- La distribución $\chi^2_k$, donde $k$ representa los grados de libertad de la misma y que procede de la suma de los cuadrados de $k$ distribuciones normales estándar independientes:
+
+$$X = Z_1^2 + Z_2^2+\cdots + Z_k^2\sim \chi_k^2$$
+
+
+- La distribución $t_k$ surge del problema de estimar la media de una población normalmente distribuida cuando el tamaño de la muestra es pequeña y procede del cociente
+
+$$T = \frac{Z}{\sqrt{\chi^2_k/k}}\sim T_k$$
+
+
+- La distribución $F_{n_1,n_2}$ aparece frecuentemente como la distribución nula de una prueba estadística, especialmente en el análisis de varianza. Viene definida como el cociente
+
+$$F = \frac{\chi^2_{n_1}/n_1}{\chi^2_{n_2}/n_2}\sim F_{n_1,n_2}$$
+
+#### Distribuciones continuas en R
+
+Distribución |  Instrucción en R |  Instrucción en Python |  Parámetros                                
+--------------------|--------------------|--------------------|--------------------
+Uniforme | `unif` | `scipy.stats.uniform` | mínimo y máximo
+Exponencial | `exp` | `scipy.stats.expon` | $\lambda$
+Normal | `norm` | `scipy.stats.normal` | media $\mu$, desviación típica $\sigma$
+Khi cuadrado | `chisq` | `scipy.stats.chi2` | grados de libertad
+t de Student | `t` | `scipy.stats.t` | grados de libertad
+F de Fisher | `f` | `scipy.stats.f` | los dos grados de libertad
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
